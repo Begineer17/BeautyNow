@@ -29,7 +29,7 @@
 * Cài đặt các thư viện cần thiết:
 
   ```bash
-  npm install express mongoose jsonwebtoken bcryptjs nodemailer multer dotenv
+  npm install express mongoose jsonwebtoken bcryptjs nodemailer multer dotenv inquirer
   ```
 
 * Cài đặt thư viện dùng trong môi trường phát triển:
