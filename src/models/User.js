@@ -17,11 +17,22 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   businessLicense: {
-    type: String,
+    type: String, // Đường dẫn file giấy phép
     required: function () {
       return this.role === 'salon';
     },
   },
+  licenseStatus: {
+    type: String,
+    enum: ['pending', 'verified', 'rejected'],
+    default: 'pending',
+  },
+  licenseVerificationHistory: [{
+    adminId: String,
+    status: String,
+    timestamp: { type: Date, default: Date.now },
+    note: String,
+  }],
   isVerified: {
     type: Boolean,
     default: false,
