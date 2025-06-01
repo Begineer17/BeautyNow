@@ -1,4 +1,4 @@
-const inquirer = require('inquirer');
+const inquirer = require('inquirer').default;
 const axios = require('axios');
 
 const API_BASE_URL = 'http://localhost:3000/admin';
