@@ -20,9 +20,6 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
-const salonAuthRoutes = require('./routes/salon_auth');
-app.use('/salon_auth', salonAuthRoutes);
-
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack); // Log full error stack
   res.status(500).json({ message: 'Server error', error: err.message || 'Unknown error' });
