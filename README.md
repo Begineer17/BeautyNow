@@ -29,7 +29,7 @@
 * Cài đặt các thư viện cần thiết:
 
   ```bash
-  npm install express mongoose jsonwebtoken bcryptjs nodemailer multer dotenv inquirer
+  npm install express sequelize pg pg-hstore jsonwebtoken bcryptjs nodemailer multer dotenv inquirer cloudinary
   ```
 
 * Cài đặt thư viện dùng trong môi trường phát triển:
@@ -38,15 +38,9 @@
   npm install --save-dev nodemon
   ```
 
-## 3. Cài đặt MongoDB
+## 3. Tạo tài khoản Supabase (Main Database), Cloudinary (Lưu trữ ảnh)
 
-* **Cài đặt local**:
-
-  * Tải **MongoDB Community Server** từ [https://www.mongodb.com/try/download/community](https://www.mongodb.com/try/download/community).
-  * Sau khi cài đặt xong, chạy MongoDB bằng lệnh:
-
-    ```bash
-    mongod
-    ```
+* Supabase: https://supabase.com/
+* Cloudinary: https://cloudinary.com/
 
 ---
