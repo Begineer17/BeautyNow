@@ -1,4 +1,4 @@
- ## Auth Endpoints
+# BeautyNow API Documentation
 
  ### POST /auth/register
  - **Description**: Register a new user or salon.
@@ -39,3 +39,99 @@
  - **Response**: `{ message: "License verified. OTP sent to salon." }` or `{ message: "License rejected. Notification sent to salon." }`
 
 ### Chạy CLI: node admin-cli.js -> Admin chọn tài khoản từ danh sách, nhập trạng thái (verified hoặc rejected) và ghi chú, sau đó API tự động gửi OTP hoặc thông báo từ chối.
+
+### POST /user-profile
+- **Description**: Create a user profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Body (form-data)**:
+  - `fullName`: String (required)
+  - `phone`: String
+  - `address`: String
+  - `faceImage`: File (jpeg/jpg/png)
+- **Response**: `{ message: "Profile created", profile: {...} }`
+
+### GET /user-profile
+- **Description**: Get user profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Response**: `{ id, userId, fullName, phone, address, faceImage, createdAt }`
+
+### PUT /user-profile
+- **Description**: Update user profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Body (form-data)**:
+  - `fullName`: String
+  - `phone`: String
+  - `address`: String
+  - `faceImage`: File (jpeg/jpg/png)
+- **Response**: `{ message: "Profile updated", profile: {...} }`
+
+### DELETE /user-profile
+- **Description**: Delete user profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Response**: `{ message: "Profile deleted" }`
+
+## Salon Profile Endpoints
+
+### POST /salon-profile
+- **Description**: Create a salon profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Body (form-data)**:
+  - `name`: String (required)
+  - `address`: String (required)
+  - `phone`: String (required)
+  - `description`: String
+  - `portfolio`: Files (jpeg/jpg/png/mp4, max 5)
+- **Response**: `{ message: "Profile created", profile: {...} }`
+
+### GET /salon-profile
+- **Description**: Get salon profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Response**: `{ id, salonId, name, address, phone, description, portfolio, createdAt }`
+
+### PUT /salon-profile
+- **Description**: Update salon profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Body (form-data)**:
+  - `name`: String
+  - `address`: String
+  - `phone`: String
+  - `description`: String
+  - `portfolio`: Files (jpeg/jpg/png/mp4, max 5)
+- **Response**: `{ message: "Profile updated", profile: {...} }`
+
+### DELETE /salon-profile
+- **Description**: Delete salon profile.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Response**: `{ message: "Profile deleted" }`
+
+### POST /salon-profile/services
+- **Description**: Create a service.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Body (form-data)**:
+  - `name`: String (required)
+  - `description`: String
+  - `price`: Number (required)
+  - `duration`: Number (required, minutes)
+  - `illustrationImage`: File (jpeg/jpg/png)
+- **Response**: `{ message: "Service created", service: {...} }`
+
+### GET /salon-profile/services
+- **Description**: Get all services of a salon.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Response**: Array of `{ id, salonId, name, description, price, duration, illustrationImage, createdAt }`
+
+### PUT /salon-profile/services/:serviceId
+- **Description**: Update a service.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Body (form-data)**:
+  - `name`: String
+  - `description`: String
+  - `price`: Number
+  - `duration`: Number (minutes)
+  - `illustrationImage`: File (jpeg/jpg/png)
+- **Response**: `{ message: "Service updated", service: {...} }`
+
+### DELETE /salon-profile/services/:serviceId
+- **Description**: Delete a service.
+- **Headers**: `Authorization: Bearer JWT_TOKEN`
+- **Response**: `{ message: "Service deleted" }`
