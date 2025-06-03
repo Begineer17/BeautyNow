@@ -15,6 +15,7 @@
  - **Body (JSON)**:
    - `email`: String
    - `otp`: String
+   - `role`: String
  - **Response**: `{ token: "JWT_TOKEN", message: "OTP verified. User logged in." }`
 
  ### POST /auth/login
