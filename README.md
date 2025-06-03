@@ -38,15 +38,14 @@
   npm install --save-dev nodemon
   ```
 
-* Cài đặt Sequelize CLI
-Install Sequelize CLI globally or locally:
-```bash
-npm install --save-dev sequelize-cli
-```
-Initialize Sequelize CLI (if not already done):
-```bash
-npx sequelize-cli init
-```
+* Cài đặt Sequelize CLI globally or locally:
+  ```bash
+  npm install --save-dev sequelize-cli
+  ```
+  Initialize Sequelize CLI (if not already done):
+  ```bash
+  npx sequelize-cli init
+  ```
 
 ## 3. Tạo tài khoản Supabase (Main Database), Cloudinary (Lưu trữ ảnh)
 
