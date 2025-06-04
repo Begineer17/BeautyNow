@@ -39,12 +39,18 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
+
 const adminRoutes = require('./routes/admin');
 app.use('/admin', adminRoutes);
+
 const userProfileRoutes = require('./routes/userProfileRoutes');
 app.use('/user-profile', userProfileRoutes);
+
 const salonProfileRoutes = require('./routes/salonProfileRoutes');
 app.use('/salon-profile', salonProfileRoutes);
+
+const serviceFilterRoutes = require('./routes/serviceFilterRoutes');
+app.use('/services', serviceFilterRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack); // Log full error stack
