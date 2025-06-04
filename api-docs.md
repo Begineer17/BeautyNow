@@ -113,6 +113,7 @@
 - **Headers**: `Authorization: Bearer JWT_TOKEN`
 - **Body (form-data)**:
   - `name`: String (required)
+  - `category`: String Array (required, e.g: ["Cat1", "Cat2"])
   - `description`: String
   - `price`: Number (required)
   - `duration`: Number (required, minutes)
@@ -139,3 +140,14 @@
 - **Description**: Delete a service.
 - **Headers**: `Authorization: Bearer JWT_TOKEN`
 - **Response**: `{ message: "Service deleted" }`
+
+## Filters
+
+### POST /services/filter
+- **Description**: Filters services based on provided criteria including service category, price range, and salon location provided by all salons.
+- **Body (form-data)**:
+  - `category`: Array String (null for none)
+  - `minPrice`: Number (null for none)
+  - `maxPrice`: Number (null for none)
+  - `location`: String (null for none)
+- **Response**: `{ services:[...] }`
