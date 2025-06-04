@@ -20,6 +20,10 @@ const Service = sequelize.define('Service', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  category: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: false,
+  },
   description: {
     type: DataTypes.TEXT,
     allowNull: true,
