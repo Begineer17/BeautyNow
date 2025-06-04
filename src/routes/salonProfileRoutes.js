@@ -140,7 +140,7 @@ router.delete('/', auth, async (req, res) => {
 
 // Các route cho Service (cập nhật để hỗ trợ illustrationImage)
 router.post('/services', auth, serviceUpload.single('illustrationImage'), async (req, res) => {
-  const { name, description, price, duration } = req.body;
+  const { name, category, description, price, duration } = req.body;
   try {
     let illustrationImage = null;
     if (req.file) {
@@ -150,6 +150,7 @@ router.post('/services', auth, serviceUpload.single('illustrationImage'), async 
     const service = await Service.create({
       salonId: req.salonId,
       name,
+      category,
       description,
       price,
       duration,
