@@ -203,5 +203,92 @@
     { "message": "Server error", "error": "<error message>" }
     ```
 
+## Review Endpoints
+
+### POST /reviews
+- **Description**: Create a new review for a salon.
+- **Headers**:
+  - `Authorization`: Bearer token (required)
+- **Body (form-data)**:
+  - `rating`: Number (required)
+  - `comment`: String (optional)
+  - `salonId`: String (UUID, required)
+  - `images`: File(s) (optional, up to 5 files; allowed types: jpeg, jpg, png)
+- **Response**:
+  - **201**:  
+    ```json
+    { "message": "Review created", "review": { ... } }
+    ```
+  - **400**:  
+    ```json
+    { "message": "salonId is required" }
+    ```
+  - **500**:  
+    ```json
+    { "message": "Server error", "error": "Error details" }
+    ```
+
+### GET /reviews/salon/:salonId
+- **Description**: Retrieve all reviews for a specific salon.
+- **Headers**:
+  - `Authorization`: Bearer token (required)
+- **URL Parameters**:
+  - `salonId`: String (UUID of the salon, required)
+- **Response**:
+  - **200**:  
+    ```json
+    { "reviews": [ { ...review object... }, { ... } ] }
+    ```
+  - **500**:  
+    ```json
+    { "message": "Server error", "error": "Error details" }
+    ```
+
+### POST /reviews/:reviewId/reply
+- **Description**: Add a reply to a review. Accessible by admin or salon users.
+- **Headers**:
+  - `Authorization`: Bearer token (required; token must have role `admin` or `salon`)
+- **URL Parameters**:
+  - `reviewId`: String (UUID of the review, required)
+- **Body (raw JSON)**:
+  - `reply`: String (required)
+- **Response**:
+  - **200**:  
+    ```json
+    { "message": "Reply added", "review": { ...updated review object... } }
+    ```
+  - **403**:  
+    ```json
+    { "message": "Access denied" }
+    ```
+  - **404**:  
+    ```json
+    { "message": "Review not found" }
+    ```
+  - **500**:  
+    ```json
+    { "message": "Server error", "error": "Error details" }
+    ```
+
+### POST /reviews/:reviewId/report
+- **Description**: Report a review (marks the review as reported).
+- **Headers**:
+  - `Authorization`: Bearer token (required)
+- **URL Parameters**:
+  - `reviewId`: String (UUID of the review, required)
+- **Response**:
+  - **200**:  
+    ```json
+    { "message": "Review reported", "review": { ...updated review object... } }
+    ```
+  - **404**:  
+    ```json
+    { "message": "Review not found" }
+    ```
+  - **500**:  
+    ```json
+    { "message": "Server error", "error": "Error details" }
+    ```
+
 --- 
 
