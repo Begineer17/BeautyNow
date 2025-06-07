@@ -70,6 +70,9 @@ app.use('/services', serviceFilterRoutes);
 const appointmentRoutes = require('./routes/appointmentRoutes');
 app.use('/appointments', appointmentRoutes);
 
+const reviewRoutes = require('./routes/reviewRoutes');
+app.use('/reviews', reviewRoutes);
+
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack); // Log full error stack
   res.status(500).json({ message: 'Server error', error: err.message || 'Unknown error' });
