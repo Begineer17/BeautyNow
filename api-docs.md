@@ -141,7 +141,7 @@
 - **Headers**: `Authorization: Bearer JWT_TOKEN`
 - **Response**: `{ message: "Service deleted" }`
 
-## Filters
+## Filters Endpoints
 
 ### POST /services/filter
 - **Description**: Filters services based on provided criteria including service category, price range, and salon location provided by all salons.
@@ -151,3 +151,57 @@
   - `maxPrice`: Number (null for none)
   - `location`: String (null for none)
 - **Response**: `{ services:[...] }`
+
+## Appointment Endpoints
+
+### POST /appointments
+- **Description**: Create a new appointment.
+- **Authentication**: Required (JWT in header)
+  - **Header**: `Authorization: Bearer <token>`
+- **Body (JSON)**:
+  - `salonId`: String or Number (required)
+  - `serviceId`: String or Number (required)
+  - `startTime`: ISO datetime string (required)
+  - `endTime`: ISO datetime string (required)
+- **Response**:
+  - **201 Created**:  
+    ```json
+    { "message": "Appointment created", "appointment": { ... } }
+    ```
+  - **401 Unauthorized**:  
+    ```json
+    { "message": "Invalid token" }
+    ```
+  - **500 Internal Server Error**:  
+    ```json
+    { "message": "Server error", "error": "<error message>" }
+    ```
+- **Realtime Integration**:
+  - Emits `appointment_created` event with the appointment data.
+
+### DELETE /appointments/:id
+- **Description**: Cancel an existing appointment.
+- **Authentication**: Required (JWT in header)
+  - **Header**: `Authorization: Bearer <token>`
+- **Parameters**:
+  - `id`: Appointment ID (required)
+- **Operation Details**:
+  - Cancels the appointment in the database.
+  - Attempts to remove the corresponding event from the Nextcloud Calendar.
+  - Emits `appointment_deleted` event with the appointment ID.
+- **Response**:
+  - **200 OK**:  
+    ```json
+    { "message": "Appointment cancelled" }
+    ```
+  - **404 Not Found**:  
+    ```json
+    { "message": "Appointment not found" }
+    ```
+  - **500 Internal Server Error**:  
+    ```json
+    { "message": "Server error", "error": "<error message>" }
+    ```
+
+--- 
+
