@@ -73,6 +73,18 @@ app.use('/appointments', appointmentRoutes);
 const reviewRoutes = require('./routes/reviewRoutes');
 app.use('/reviews', reviewRoutes);
 
+const adRoutes = require('./routes/adRoutes');
+app.use('/ads', adRoutes);
+
+const analyticsRoutes = require('./routes/analyticsRoutes');
+app.use('/analytics', analyticsRoutes);
+
+const offerRoutes = require('./routes/salonVoucherRoutes');
+app.use('/salon-vouchers', offerRoutes);
+
+const userVoucherRoutes = require('./routes/userVoucherRoutes');
+app.use('/user-vouchers', userVoucherRoutes);
+
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack); // Log full error stack
   res.status(500).json({ message: 'Server error', error: err.message || 'Unknown error' });
