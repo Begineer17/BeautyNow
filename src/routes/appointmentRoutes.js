@@ -66,5 +66,35 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+const authSalon = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization').replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'salon') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    req.salonId = decoded.id;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+// Cập nhật trạng thái lịch hẹn
+router.put('/:apId', authSalon, async (req, res) => {
+  const { apId } = req.params;
+//   const { packageType, price, duration } = req.body;
+  const { status } = req.body; // Chỉ cập nhật trạng thái nếu cần
+  try {
+    const ap = await Appointment.findOne({ where: { id: apId, salonId: req.salonId } });
+    if (!ad) return res.status(404).json({ message: 'Advertisement not found' });
+    
+    await ad.update({ status }); 
+
+    res.status(200).json({ message: 'Appointment updated', ap });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
 
 module.exports = router;
