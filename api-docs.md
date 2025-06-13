@@ -290,5 +290,287 @@
     { "message": "Server error", "error": "Error details" }
     ```
 
+## Advertisement
+
+### 1. Update Advertisement Status
+
+**Endpoint:**  
+```
+PUT /admin/:adId
+```
+
+**Description:**  
+Cập nhật trạng thái của quảng cáo.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Admin role)
+
+**Body (JSON):**
+```json
+{
+  "status": "String (required)"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Advertisement updated",
+  "ad": { ... }
+}
+```
+
+### 2. Delete (Cancel) Advertisement
+
+**Endpoint:**  
+```
+DELETE /admin/:adId
+```
+
+**Description:**  
+Xoá (hủy) quảng cáo.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Admin role)
+
+**Response:**
+```json
+{
+  "message": "Advertisement cancelled"
+}
+```
+
+### 3. Purchase Advertisement Package
+
+**Endpoint:**  
+```
+POST /ads
+```
+
+**Description:**  
+Mua gói quảng cáo.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Salon role)
+
+**Body (JSON):**
+```json
+{
+  "packageType": "String (required, ví dụ: 'highlight' để hiển thị nổi bật)",
+  "price": "Number (required)",
+  "duration": "Number (required)",
+  "startTime": "Date (required)",
+  "endTime": "Date (required)"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Advertisement package purchased",
+  "ad": { ... }
+}
+```
+
+### 4. Get List of Advertisements
+
+**Endpoint:**  
+```
+GET /ads
+```
+
+**Description:**  
+Lấy danh sách quảng cáo của salon.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Salon role)
+
+**Response:**
+```json
+{
+  "ads": [ ... ]
+}
+```
+
+## UserVoucher
+
+### 1. Create Voucher (Admin)
+
+**Endpoint:**  
+```
+POST /admin/user-vouchers
+```
+
+**Description:**  
+Admin tạo voucher mới và gán cho một user cụ thể.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Admin role)
+
+**Body (JSON):**
+```json
+{
+  "userId": "Number (required)",
+  "title": "String (required)",
+  "discountPercentage": "Number (optional)",
+  "comboDetails": "String (optional)",
+  "startDate": "Date (required)",
+  "endDate": "Date (required)"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Voucher created",
+  "voucher": { ... }
+}
+```
+
+---
+
+### 2. Delete Voucher (Admin)
+
+**Endpoint:**  
+```
+DELETE /admin/user-vouchers/:voucherId
+```
+
+**Description:**  
+Admin xoá voucher của user.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Admin role)
+
+**Response:**
+```json
+{
+  "message": "Voucher deleted"
+}
+```
+
+---
+
+### 3. Get User's Vouchers
+
+**Endpoint:**  
+```
+GET /user-vouchers
+```
+
+**Description:**  
+Lấy danh sách voucher của người dùng đang đăng nhập.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (User role)
+
+**Response:**
+```json
+{
+  "vouchers": [ ... ]
+}
+```
+
+## SalonVoucher
+
+### 1. Delete Salon Voucher (Admin)
+
+**Endpoint:**  
+```
+DELETE /admin/salon-vouchers/:voucherId
+```
+
+**Description:**  
+Admin xoá voucher của salon.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Admin role)
+
+**Response:**
+```json
+{
+  "message": "Voucher deleted"
+}
+```
+
+### 2. Create Salon Voucher
+
+**Endpoint:**  
+```
+POST /salon-vouchers
+```
+
+**Description:**  
+Tạo ưu đãi (voucher) mới cho salon.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Salon role)
+
+**Body (JSON):**
+```json
+{
+  "title": "String (required)",
+  "discountPercentage": "Number (required)",
+  "comboDetails": "String (optional)",
+  "startDate": "Date (required)",
+  "endDate": "Date (required)"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "SalonVoucher created",
+  "salonVoucher": { ... }
+}
+```
+
+### 3. Get List of Salon Vouchers
+
+**Endpoint:**  
+```
+GET /salon-vouchers
+```
+
+**Description:**  
+Lấy danh sách ưu đãi của salon.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Salon role)
+
+**Response:**
+```json
+{
+  "salonVouchers": [ ... ]
+}
+```
+
+## Analytics
+
+### Analyze Revenue and Appointments
+
+**Endpoint:**  
+```
+GET /analytics
+```
+
+**Description:**  
+Phân tích doanh thu và lượt đặt lịch theo khoảng thời gian.
+
+**Headers:**  
+- Authorization: Bearer JWT_TOKEN (Salon role)
+
+**Query Parameters:**  
+- startDate: Date (optional, ví dụ: 2025-06-01)
+- endDate: Date (optional, ví dụ: 2025-06-30)
+
+**Response:**
+```json
+{
+  "totalAppointments": "Number",
+  "totalRevenue": "Number"
+}
+```
+
 --- 
 
