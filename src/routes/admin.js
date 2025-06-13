@@ -145,7 +145,7 @@ router.delete('/salon-vouchers/:voucherId', isAdmin, async (req, res) => {
 });
 
 // Cập nhật trạng thái quảng cáo
-router.put('/:adId', authSalon, async (req, res) => {
+router.put('/:adId', isAdmin, async (req, res) => {
   const { adId } = req.params;
 //   const { packageType, price, duration } = req.body;
   const { status } = req.body; // Chỉ cập nhật trạng thái nếu cần
@@ -166,7 +166,7 @@ router.put('/:adId', authSalon, async (req, res) => {
 });
 
 // Xóa quảng cáo (hủy quảng cáo)
-router.delete('/:adId', authSalon, async (req, res) => {
+router.delete('/:adId', isAdmin, async (req, res) => {
   const { adId } = req.params;
   try {
     const ad = await Advertisement.findOne({ where: { id: adId, salonId: req.salonId } });
