@@ -146,11 +146,13 @@ router.post('/services', auth, serviceUpload.single('illustrationImage'), async 
     if (req.file) {
       illustrationImage = await uploadFile(req.file.path, 'service_images');
     }
+    // Nếu category là chuỗi JSON, parse ra mảng
+    const categoryArray = typeof category === 'string' ? JSON.parse(category) : category;
 
     const service = await Service.create({
       salonId: req.salonId,
       name,
-      category,
+      category: categoryArray,
       description,
       price,
       duration,
