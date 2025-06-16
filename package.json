@@ -16,13 +16,28 @@
     "cloudinary": "^2.6.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "http": "^0.0.1-security",
+    "inquirer": "^12.6.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
-    "multer": "^2.0.0",
+    "multer": "^2.0.1",
     "nodemailer": "^7.0.3",
+    "pg": "^8.16.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7",
+    "socket.io": "^4.8.1",
     "twilio": "^5.6.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
-  }
+    "nodemon": "^3.1.10",
+    "sequelize-cli": "^6.6.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Begineer17/BeautyNow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Begineer17/BeautyNow/issues"
+  },
+  "homepage": "https://github.com/Begineer17/BeautyNow#readme"
 }

@@ -1,0 +1,5 @@
+.env
+congig.json
+node_modules/
+dist/
+config/

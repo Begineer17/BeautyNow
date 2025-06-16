@@ -4,6 +4,7 @@ const { Sequelize } = require('sequelize');
 const { execSync } = require('child_process');
 const http = require('http'); // Import HTTP module
 const { Server } = require('socket.io'); // Import Socket.io
+const cors = require('cors'); // Import the CORS middleware
 
 const app = express();
 
@@ -11,6 +12,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Serve static files for uploads
 app.use('/uploads', express.static('uploads'));
+
+app.use(cors({
+  origin: 'http://localhost:8080', // Replace with your frontend's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+  credentials: true, // Allow cookies if needed
+}));
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
