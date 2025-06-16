@@ -52,4 +52,37 @@
 * Supabase: https://supabase.com/
 * Cloudinary: https://cloudinary.com/
 
+## 4. Tạo file env va config.
+
+* Tạo file .env tại root
+```
+# Server Port
+PORT=3000
+
+# Database Configuration
+DATABASE_URL=postgresql://<username>:<password>@<host>:<port>/<database_name>
+
+# JWT Secret Key
+JWT_SECRET=your_jwt_secret_key
+
+# Email Configuration (for nodemailer)
+EMAIL_USER=your_email@example.com
+EMAIL_PASS=your_email_password
+
+# Cloudinary Configuration (for image uploads)
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+```
+
+* Tạo file config.json tại root/config/config.json
+```json
+{
+  "development": {
+    "url": "postgresql://<username>:<password>@<host>:<port>/<database_name>",
+    "dialect": "postgres",
+    "logging": false
+  }
+}
+```
 ---
