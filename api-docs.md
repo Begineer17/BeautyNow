@@ -6,9 +6,9 @@
  - **Body (form-data)**:
    - `email`: String (required)
    - `password`: String (required)
-   - `role`: String (consumer/salon, required)
+   - `role`: String (user/salon, required)
    - `businessLicense`: File (required for salon)
- - **Response**: `{ message: "Registration successful. Awaiting license verification." }` (salon) or `{ message: "Registration successful. OTP sent to email." }` (consumer)
+ - **Response**: `{ message: "Registration successful. Awaiting license verification." }` (salon) or `{ message: "Registration successful. OTP sent to email." }` (user)
 
  ### POST /auth/verify-otp
  - **Description**: Verify OTP to activate account.
