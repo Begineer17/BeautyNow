@@ -81,6 +81,9 @@ app.use('/appointments', appointmentRoutes);
 const reviewRoutes = require('./routes/reviewRoutes');
 app.use('/reviews', reviewRoutes);
 
+const updateRatingRoutes = require('./routes/updateRatingRoutes');
+app.use('/update-ratings', updateRatingRoutes);
+
 const adRoutes = require('./routes/adRoutes');
 app.use('/ads', adRoutes);
 

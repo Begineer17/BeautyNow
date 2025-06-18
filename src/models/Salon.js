@@ -82,6 +82,16 @@ const Salon = sequelize.define('Salon', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  rating: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: 0.0,
+  },
+  reviewCount: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

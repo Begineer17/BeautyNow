@@ -42,6 +42,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      rating: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      reviewCount: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,

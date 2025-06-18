@@ -40,6 +40,16 @@ const Service = sequelize.define('Service', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  rating: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: 0.0,
+  },
+  reviewCount: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

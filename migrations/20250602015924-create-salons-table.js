@@ -37,6 +37,14 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
+      rating: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      reviewCount: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
