@@ -10,10 +10,12 @@ const router = express.Router();
 // Middleware xác thực người dùng
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header('Authorization').replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'user') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
     req.userId = decoded.id;
-    req.role = decoded.role;
     next();
   } catch (error) {
     res.status(401).json({ message: 'Invalid token' });
@@ -42,10 +44,9 @@ const upload = multer({
   },
 });
 
-// Tạo đánh giá mới
-router.post('/', auth, upload.array('images', 5), async (req, res) => {
+// Tạo đánh giá mới (cho salon)
+router.post('/salon', auth, upload.array('images', 5), async (req, res) => {
   const { rating, comment, salonId } = req.body;
-  console.log("salonID: ", salonId);
   if (!salonId) {
     return res.status(400).json({ message: 'salonId is required' });
   }
@@ -59,7 +60,7 @@ router.post('/', auth, upload.array('images', 5), async (req, res) => {
     }
     const review = await Review.create({
       userId: req.userId,
-      salonId,
+      salonId: salonId,
       rating,
       comment,
       images,
@@ -74,6 +75,43 @@ router.post('/', auth, upload.array('images', 5), async (req, res) => {
 router.get('/salon/:salonId', auth, async (req, res) => {
   try {
     const reviews = await Review.findAll({ where: { salonId: req.params.salonId } });
+    res.status(200).json({ reviews });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Tạo đánh giá mới (cho service)
+router.post('/service', auth, upload.array('images', 5), async (req, res) => {
+  const { rating, comment, serviceId } = req.body;
+  if (!serviceId) {
+    return res.status(400).json({ message: 'serviceId is required' });
+  }
+  try {
+    let images = [];
+    if (req.files) {
+      for (const file of req.files) {
+        const imageUrl = await uploadFile(file.path, 'review_images');
+        images.push(imageUrl);
+      }
+    }
+    const review = await Review.create({
+      userId: req.userId,
+      serviceId: serviceId,
+      rating,
+      comment,
+      images,
+    });
+    res.status(201).json({ message: 'Review created', review });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Xem tất cả đánh giá của 1 service
+router.get('/service/:serviceID', auth, async (req, res) => {
+  try {
+    const reviews = await Review.findAll({ where: { serviceId: req.params.serviceId } });
     res.status(200).json({ reviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

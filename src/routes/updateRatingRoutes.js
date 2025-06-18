@@ -14,7 +14,7 @@ router.post('/service/:serviceId', async (req, res) => {
     try {
         const { serviceId } = req.params;
 
-        // Lấy tất cả review có serviceId nhất định (giả sử Review đã có trường serviceId)
+        // Lấy tất cả review có serviceId nhất định
         const reviews = await Review.findAll({ where: { serviceId } });
 
         // Tính trung bình rating và tổng số review cho Service

@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
 const Salon = require('./Salon');
+const Service = require('./Service');
 
 const Review = sequelize.define('Review', {
   id: {
@@ -20,9 +21,18 @@ const Review = sequelize.define('Review', {
   },
   salonId: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: 'salons',
+      key: 'id',
+    },
+    onDelete: 'CASCADE',
+  },
+  serviceId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'services',
       key: 'id',
     },
     onDelete: 'CASCADE',
@@ -61,5 +71,8 @@ Review.belongsTo(User, { foreignKey: 'userId' });
 
 Salon.hasMany(Review, { foreignKey: 'salonId' });
 Review.belongsTo(Salon, { foreignKey: 'salonId' });
+
+Service.hasMany(Review, { foreignKey: 'serviceId' });
+Review.belongsTo(Service, { foreignKey: 'serviceId' });
 
 module.exports = Review;

@@ -36,6 +36,8 @@ router.post('/register', upload.single('businessLicense'), async (req, res) => {
   const { email, password, role } = req.body;
   const businessLicense = req.file ? req.file.path : null;
 
+  console.log(req.body);
+
   try {
     if (role === 'salon') {
       if (!businessLicense) {
@@ -50,8 +52,9 @@ router.post('/register', upload.single('businessLicense'), async (req, res) => {
         businessLicense,
         licenseStatus: 'pending',
       });
+
       res.status(201).json({ message: 'Salon registered. Awaiting license verification.' });
-    } else {
+    } else if (role === 'user') {
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) return res.status(400).json({ message: 'Email already exists' });
 

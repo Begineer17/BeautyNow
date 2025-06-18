@@ -20,9 +20,18 @@ module.exports = {
       },
       salonId: {
         type: Sequelize.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'salons',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+      },
+      serviceId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'services',
           key: 'id',
         },
         onDelete: 'CASCADE',

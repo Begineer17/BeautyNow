@@ -38,11 +38,11 @@ module.exports = {
         allowNull: true,
       },
       rating: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: true,
       },
       reviewCount: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: true,
       },
       createdAt: {
