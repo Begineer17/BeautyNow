@@ -96,6 +96,25 @@ app.use('/salon-vouchers', offerRoutes);
 const userVoucherRoutes = require('./routes/userVoucherRoutes');
 app.use('/user-vouchers', userVoucherRoutes);
 
+const pushNotificationRoutes = require('./routes/pushNotificationRoutes');
+
+app.use('/push-notification', pushNotificationRoutes);
+
+
+// Socket.io xử lý sự kiện chat
+io.on('connection', (socket) => {
+    console.log('User connected: ' + socket.id);
+
+    socket.on('chatMessage', (data) => {
+        console.log('Chat message received:', data);
+        io.emit('chatMessage', data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected: ' + socket.id);
+    });
+});
+
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack); // Log full error stack
   res.status(500).json({ message: 'Server error', error: err.message || 'Unknown error' });

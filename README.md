@@ -29,7 +29,7 @@
 * Cài đặt các thư viện cần thiết:
 
   ```bash
-  npm install express sequelize pg pg-hstore jsonwebtoken bcryptjs nodemailer multer dotenv inquirer cloudinary socket.io http
+  npm install express sequelize pg pg-hstore jsonwebtoken bcryptjs nodemailer multer dotenv inquirer cloudinary socket.io http web-push
   ```
 
 * Cài đặt thư viện dùng trong môi trường phát triển:
@@ -73,6 +73,10 @@ EMAIL_PASS=your_email_password
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# Web-Push Configuration (Uncomment line 'console.log(webPush.generateVAPIDKeys());' and run 'node src/config/webPush.js' to get the keys logged on console)
+VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_PRIVATE_KEY=your_vapid_private_key
 ```
 
 * Tạo file config.json tại root/config/config.json
