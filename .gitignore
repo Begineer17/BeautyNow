@@ -1,5 +1,6 @@
 .env
 congig.json
+uploads/
 node_modules/
 dist/
 config/*
