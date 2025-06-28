@@ -8,7 +8,8 @@ const router = express.Router();
 // Middleware xác thực cho user (role: user)
 const authUser = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: 'No token provided' });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role !== 'user') {
       return res.status(403).json({ message: 'Access denied' });

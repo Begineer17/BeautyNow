@@ -3,18 +3,22 @@ const express = require('express');
 const { Sequelize } = require('sequelize');
 const { execSync } = require('child_process');
 const http = require('http'); // Import HTTP module
+const https = require('https'); // Import HTTPS module
+const fs = require('fs'); // Import fs for reading SSL certificates
 const { Server } = require('socket.io'); // Import Socket.io
 const cors = require('cors'); // Import the CORS middleware
+const cookieParser = require('cookie-parser'); // Import cookie-parser
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // Use cookie-parser middleware
 // Serve static files for uploads
 app.use('/uploads', express.static('uploads'));
 
 app.use(cors({
-  origin: 'http://localhost:8080', // Replace with your frontend's URL
+  origin: 'https://localhost:8080', // Update to HTTPS
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
   credentials: true, // Allow cookies if needed
   
@@ -45,11 +49,28 @@ async function initializeDatabase() {
 initializeDatabase();
 
 const PORT = process.env.PORT || 3000;
+const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
 
-// Create HTTP server and initialize Socket.io
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: '*' } // Adjust CORS as needed
+// SSL Certificate options
+const sslOptions = {
+  key: fs.readFileSync('./ssl/key.pem'),
+  cert: fs.readFileSync('./ssl/cert.pem')
+};
+
+// Create HTTP server for redirect to HTTPS
+const httpApp = express();
+httpApp.use((req, res) => {
+  res.redirect(`https://${req.headers.host.replace(PORT, HTTPS_PORT)}${req.url}`);
+});
+const httpServer = http.createServer(httpApp);
+
+// Create HTTPS server and initialize Socket.io
+const httpsServer = https.createServer(sslOptions, app);
+const io = new Server(httpsServer, {
+  cors: { 
+    origin: ['https://localhost:8080', 'https://localhost:3443'],
+    credentials: true
+  }
 });
 
 // Lưu đối tượng io vào req (dùng middleware)
@@ -58,7 +79,16 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Start HTTP server (for redirect)
+httpServer.listen(PORT, () => {
+  console.log(`HTTP Server running on port ${PORT} (redirects to HTTPS)`);
+});
+
+// Start HTTPS server
+httpsServer.listen(HTTPS_PORT, () => {
+  console.log(`HTTPS Server running on port ${HTTPS_PORT}`);
+});
 
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);

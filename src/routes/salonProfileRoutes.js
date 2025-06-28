@@ -45,7 +45,8 @@ const serviceUpload = multer({
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization').replace('Bearer ', '');
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: 'No token provided' });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role !== 'salon') {
       return res.status(403).json({ message: 'Access denied' });
