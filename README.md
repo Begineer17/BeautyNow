@@ -29,7 +29,7 @@
 * Cài đặt các thư viện cần thiết:
 
   ```bash
-  npm install express sequelize pg pg-hstore jsonwebtoken bcryptjs nodemailer multer dotenv inquirer cloudinary socket.io http web-push
+  npm install express sequelize pg pg-hstore jsonwebtoken bcryptjs nodemailer multer dotenv inquirer cloudinary socket.io http web-push node-forge
   ```
 
 * Cài đặt thư viện dùng trong môi trường phát triển:
