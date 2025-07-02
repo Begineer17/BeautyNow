@@ -36,7 +36,7 @@ app.use('/uploads', express.static('uploads'));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://yourdomain.com'] // Thay thế bằng domain thực của bạn
-    : ['http://localhost:8080', 'https://localhost:8080', 'https://localhost:3443'], // Allow cả HTTP và HTTPS cho development
+    : ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:3000', 'https://localhost:3443'], // Allow cả HTTP và HTTPS cho development
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
   credentials: true, // Allow cookies if needed
   
