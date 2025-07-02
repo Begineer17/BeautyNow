@@ -11,6 +11,22 @@ const cookieParser = require('cookie-parser'); // Import cookie-parser
 
 const app = express();
 
+// Security middleware để force HTTPS
+app.use((req, res, next) => {
+  // Thêm security headers
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Kiểm tra nếu request không phải HTTPS (trong production)
+  if (req.header('x-forwarded-proto') !== 'https' && process.env.NODE_ENV === 'production') {
+    return res.redirect(301, `https://${req.header('host')}${req.url}`);
+  }
+  
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Use cookie-parser middleware
@@ -18,7 +34,9 @@ app.use(cookieParser()); // Use cookie-parser middleware
 app.use('/uploads', express.static('uploads'));
 
 app.use(cors({
-  origin: 'https://localhost:8080', // Update to HTTPS
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://yourdomain.com'] // Thay thế bằng domain thực của bạn
+    : ['http://localhost:8080', 'https://localhost:8080', 'https://localhost:3443'], // Allow cả HTTP và HTTPS cho development
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
   credentials: true, // Allow cookies if needed
   
@@ -59,9 +77,31 @@ const sslOptions = {
 
 // Create HTTP server for redirect to HTTPS
 const httpApp = express();
-httpApp.use((req, res) => {
-  res.redirect(`https://${req.headers.host.replace(PORT, HTTPS_PORT)}${req.url}`);
+
+// Middleware để redirect HTTP sang HTTPS
+httpApp.use((req, res, next) => {
+  // Log request để debug
+  console.log(`HTTP Request: ${req.method} ${req.url} from ${req.ip}`);
+  
+  // Xây dựng HTTPS URL
+  let httpsHost = req.headers.host;
+  
+  // Thay thế port nếu cần
+  if (httpsHost.includes(':' + PORT)) {
+    httpsHost = httpsHost.replace(':' + PORT, ':' + HTTPS_PORT);
+  } else if (!httpsHost.includes(':')) {
+    // Nếu không có port trong host, thêm HTTPS port
+    httpsHost = httpsHost + ':' + HTTPS_PORT;
+  }
+  
+  const httpsUrl = `https://${httpsHost}${req.url}`;
+  
+  console.log(`Redirecting to: ${httpsUrl}`);
+  
+  // Redirect với status 301 (permanent redirect)
+  res.status(301).redirect(httpsUrl);
 });
+
 const httpServer = http.createServer(httpApp);
 
 // Create HTTPS server and initialize Socket.io
@@ -130,6 +170,29 @@ const pushNotificationRoutes = require('./routes/pushNotificationRoutes');
 
 app.use('/push-notification', pushNotificationRoutes);
 
+// Health check route
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    protocol: req.protocol,
+    secure: req.secure,
+    headers: {
+      host: req.headers.host,
+      'x-forwarded-proto': req.headers['x-forwarded-proto']
+    }
+  });
+});
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'BeautyNow API Server', 
+    protocol: req.protocol,
+    secure: req.secure,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Socket.io xử lý sự kiện chat
 io.on('connection', (socket) => {

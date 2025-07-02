@@ -36,8 +36,6 @@ router.post('/register', upload.single('businessLicense'), async (req, res) => {
   const { email, password, role } = req.body;
   const businessLicense = req.file ? req.file.path : null;
 
-  console.log(req.body);
-
   try {
     if (role === 'salon') {
       if (!businessLicense) {
@@ -117,7 +115,13 @@ router.post('/verify-otp', async (req, res) => {
       expiresIn: '1d',
     });
 
-    res.status(200).json({ token, message: 'OTP verified. Account logged in.' });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Chỉ secure trong production
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000 // 1 ngày
+    });
+    res.status(200).json({ message: 'OTP verified. Account logged in.' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -152,8 +156,8 @@ router.post('/login', async (req, res) => {
     // Set token vào cookie httpOnly
     res.cookie('token', token, {
       httpOnly: true,
-      secure: true, // Always use secure for HTTPS
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production', // Chỉ secure trong production
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 24 * 60 * 60 * 1000 // 1 ngày
     });
     res.status(200).json({ message: 'Login successful' });
@@ -167,8 +171,8 @@ router.post('/logout', (req, res) => {
   try {
     res.clearCookie('token', {
       httpOnly: true,
-      secure: true, // Always use secure for HTTPS
-      sameSite: 'lax'
+      secure: process.env.NODE_ENV === 'production', // Chỉ secure trong production
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
     });
     res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
