@@ -103,6 +103,9 @@ httpApp.use((req, res, next) => {
 });
 
 const httpServer = http.createServer(httpApp);
+httpServer.listen(PORT, () => {
+  console.log(`HTTP Server running on port ${PORT} (redirects to HTTPS)`);
+});
 
 // Create HTTPS server and initialize Socket.io
 const httpsServer = https.createServer(sslOptions, app);
@@ -118,11 +121,6 @@ const io = new Server(httpsServer, {
 app.use((req, res, next) => {
   req.io = io;
   next();
-});
-
-// Start HTTP server (for redirect)
-httpServer.listen(PORT, () => {
-  console.log(`HTTP Server running on port ${PORT} (redirects to HTTPS)`);
 });
 
 // Start HTTPS server
