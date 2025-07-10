@@ -51,4 +51,229 @@ router.post('/filter', async (req, res) => {
   }
 });
 
+/*
+  API: GET /api/services/top
+  Lấy danh sách top services dựa trên rating cao và review count nhiều
+  Query params:
+  - limit: số lượng kết quả trả về (default: 10)
+  - category: filter theo category (optional)
+*/
+router.get('/top', async (req, res) => {
+  try {
+    const { limit = 10, category } = req.query;
+    
+    const whereCondition = {};
+    if (category) {
+      whereCondition.category = { [Op.contains]: [category] };
+    }
+
+    const topServices = await Service.findAll({
+      where: whereCondition,
+      include: [{
+        model: Salon,
+        include: [{
+          model: SalonProfile,
+          attributes: ['name', 'address', 'phone']
+        }],
+        attributes: ['id', 'email', 'licenseStatus', 'isVerified']
+      }],
+      order: [
+        ['rating', 'DESC'],
+        ['reviewCount', 'DESC'],
+        ['createdAt', 'DESC']
+      ],
+      limit: parseInt(limit),
+    });
+
+    res.status(200).json({ 
+      success: true,
+      data: topServices,
+      message: 'Top services retrieved successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
+/*
+  API: GET /api/services/top-salons
+  Lấy danh sách top salons dựa trên rating cao và review count nhiều
+  Query params:
+  - limit: số lượng kết quả trả về (default: 10)
+  - location: filter theo địa điểm (optional)
+*/
+router.get('/top-salons', async (req, res) => {
+  try {
+    const { limit = 10, location } = req.query;
+    
+    const includeCondition = [{
+      model: SalonProfile,
+      attributes: ['name', 'address', 'phone', 'description', 'portfolio']
+    }];
+
+    if (location) {
+      includeCondition[0].where = {
+        address: { [Op.iLike]: `%${location}%` }
+      };
+    }
+
+    const topSalons = await Salon.findAll({
+      where: {
+        licenseStatus: 'verified',
+        isVerified: true
+      },
+      include: includeCondition,
+      order: [
+        ['rating', 'DESC'],
+        ['reviewCount', 'DESC'],
+        ['createdAt', 'DESC']
+      ],
+      limit: parseInt(limit),
+    });
+
+    res.status(200).json({ 
+      success: true,
+      data: topSalons,
+      message: 'Top salons retrieved successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
+/*
+  API: POST /api/services/search
+  Tìm kiếm services và salons cho User
+  Body params:
+  - query: từ khóa tìm kiếm (tên service, tên salon, mô tả)
+  - category: filter theo category service (optional)
+  - location: filter theo địa điểm salon (optional)
+  - minPrice, maxPrice: khoảng giá service (optional)
+  - limit: số lượng kết quả trả về (default: 20)
+  - type: 'services' | 'salons' | 'both' (default: 'both')
+*/
+router.post('/search', async (req, res) => {
+  try {
+    const { 
+      query, 
+      category, 
+      location, 
+      minPrice, 
+      maxPrice, 
+      limit = 20, 
+      type = 'both' 
+    } = req.body;
+
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Search query is required' 
+      });
+    }
+
+    const results = { services: [], salons: [] };
+
+    // Tìm kiếm Services
+    if (type === 'services' || type === 'both') {
+      const serviceWhere = {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${query}%` } },
+          { description: { [Op.iLike]: `%${query}%` } }
+        ]
+      };
+
+      if (category) {
+        serviceWhere.category = { [Op.contains]: [category] };
+      }
+
+      if (minPrice || maxPrice) {
+        serviceWhere.price = {};
+        if (minPrice) serviceWhere.price[Op.gte] = parseFloat(minPrice);
+        if (maxPrice) serviceWhere.price[Op.lte] = parseFloat(maxPrice);
+      }
+
+      const serviceInclude = [{
+        model: Salon,
+        include: [{
+          model: SalonProfile,
+          attributes: ['name', 'address', 'phone']
+        }],
+        attributes: ['id', 'email', 'licenseStatus', 'isVerified', 'rating', 'reviewCount']
+      }];
+
+      // Nếu có filter theo location thì thêm điều kiện
+      if (location) {
+        serviceInclude[0].include[0].where = {
+          address: { [Op.iLike]: `%${location}%` }
+        };
+      }
+
+      results.services = await Service.findAll({
+        where: serviceWhere,
+        include: serviceInclude,
+        order: [
+          ['rating', 'DESC'],
+          ['reviewCount', 'DESC']
+        ],
+        limit: parseInt(limit),
+      });
+    }
+
+    // Tìm kiếm Salons
+    if (type === 'salons' || type === 'both') {
+      const salonInclude = [{
+        model: SalonProfile,
+        where: {
+          [Op.or]: [
+            { name: { [Op.iLike]: `%${query}%` } },
+            { description: { [Op.iLike]: `%${query}%` } }
+          ]
+        },
+        attributes: ['name', 'address', 'phone', 'description', 'portfolio']
+      }];
+
+      if (location) {
+        salonInclude[0].where.address = { [Op.iLike]: `%${location}%` };
+      }
+
+      results.salons = await Salon.findAll({
+        where: {
+          licenseStatus: 'verified',
+          isVerified: true
+        },
+        include: salonInclude,
+        order: [
+          ['rating', 'DESC'],
+          ['reviewCount', 'DESC']
+        ],
+        limit: parseInt(limit),
+      });
+    }
+
+    // Tính tổng số kết quả
+    const totalResults = results.services.length + results.salons.length;
+
+    res.status(200).json({ 
+      success: true,
+      data: results,
+      totalResults,
+      message: 'Search completed successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router;

@@ -46,7 +46,7 @@
 
 ### POST /user-profile
 - **Description**: Create a user profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Body (form-data)**:
   - `fullName`: String (required)
   - `phone`: String
@@ -56,12 +56,12 @@
 
 ### GET /user-profile
 - **Description**: Get user profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Response**: `{ id, userId, fullName, phone, address, faceImage, createdAt }`
 
 ### PUT /user-profile
 - **Description**: Update user profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Body (form-data)**:
   - `fullName`: String
   - `phone`: String
@@ -71,14 +71,14 @@
 
 ### DELETE /user-profile
 - **Description**: Delete user profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Response**: `{ message: "Profile deleted" }`
 
 ## Salon Profile Endpoints
 
 ### POST /salon-profile
 - **Description**: Create a salon profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Body (form-data)**:
   - `name`: String (required)
   - `address`: String (required)
@@ -89,12 +89,12 @@
 
 ### GET /salon-profile
 - **Description**: Get salon profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Response**: `{ id, salonId, name, address, phone, description, portfolio, createdAt }`
 
 ### PUT /salon-profile
 - **Description**: Update salon profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Body (form-data)**:
   - `name`: String
   - `address`: String
@@ -105,12 +105,12 @@
 
 ### DELETE /salon-profile
 - **Description**: Delete salon profile.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Response**: `{ message: "Profile deleted" }`
 
 ### POST /salon-profile/services
 - **Description**: Create a service.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Body (form-data)**:
   - `name`: String (required)
   - `category`: String Array (required, e.g: ["Cat1", "Cat2"])
@@ -122,12 +122,12 @@
 
 ### GET /salon-profile/services
 - **Description**: Get all services of a salon.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Response**: Array of `{ id, salonId, name, description, price, duration, illustrationImage, createdAt }`
 
 ### PUT /salon-profile/services/:serviceId
 - **Description**: Update a service.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Body (form-data)**:
   - `name`: String
   - `description`: String
@@ -138,7 +138,7 @@
 
 ### DELETE /salon-profile/services/:serviceId
 - **Description**: Delete a service.
-- **Headers**: `Authorization: Bearer JWT_TOKEN`
+
 - **Response**: `{ message: "Service deleted" }`
 
 ## Filters Endpoints
@@ -151,6 +151,144 @@
   - `maxPrice`: Number (null for none)
   - `location`: String (null for none)
 - **Response**: `{ services:[...] }`
+
+### Get Top Services
+**Endpoint:** `GET /services/top`
+
+**Mô tả:** Lấy danh sách top services dựa trên rating cao và review count nhiều
+
+**Query Parameters:**
+- `limit` (optional): Số lượng kết quả trả về (default: 10)
+- `category` (optional): Lọc theo category của service
+
+**Ví dụ request:**
+```
+GET /services/top?limit=5&category=hair
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Dịch vụ cắt tóc",
+      "category": ["hair"],
+      "description": "Mô tả dịch vụ",
+      "price": "100000.00",
+      "duration": 60,
+      "rating": 4.8,
+      "reviewCount": 25,
+      "Salon": {
+        "id": "salon-uuid",
+        "email": "salon@example.com",
+        "licenseStatus": "verified",
+        "isVerified": true,
+        "SalonProfile": {
+          "name": "Salon ABC",
+          "address": "123 Đường ABC, TP.HCM",
+          "phone": "0123456789"
+        }
+      }
+    }
+  ],
+  "message": "Top services retrieved successfully"
+}
+```
+
+### Get Top Salons
+**Endpoint:** `GET /services/top-salons`
+
+**Mô tả:** Lấy danh sách top salons dựa trên rating cao và review count nhiều
+
+**Query Parameters:**
+- `limit` (optional): Số lượng kết quả trả về (default: 10)
+- `location` (optional): Lọc theo địa điểm (tìm kiếm trong address)
+
+**Ví dụ request:**
+```
+GET /services/top-salons?limit=5&location=HCM
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "salon-uuid",
+      "email": "salon@example.com",
+      "licenseStatus": "verified",
+      "isVerified": true,
+      "rating": 4.9,
+      "reviewCount": 150,
+      "SalonProfile": {
+        "name": "Salon XYZ",
+        "address": "456 Đường XYZ, TP.HCM",
+        "phone": "0987654321",
+        "description": "Salon chuyên nghiệp",
+        "portfolio": {...}
+      }
+    }
+  ],
+  "message": "Top salons retrieved successfully"
+}
+```
+
+### Search Services & Salons
+**Endpoint:** `POST /services/search`
+
+**Mô tả:** Tìm kiếm services và salons cho User
+
+**Body Parameters:**
+- `query` (required): Từ khóa tìm kiếm (tên service, tên salon, mô tả)
+- `category` (optional): Filter theo category service
+- `location` (optional): Filter theo địa điểm salon
+- `minPrice`, `maxPrice` (optional): Khoảng giá service
+- `limit` (optional): Số lượng kết quả trả về (default: 20)
+- `type` (optional): 'services' | 'salons' | 'both' (default: 'both')
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "services": [
+      {
+        "id": "service-uuid",
+        "name": "Dịch vụ cắt tóc nam",
+        "category": ["hair"],
+        "description": "Cắt tóc chuyên nghiệp",
+        "price": "80000.00",
+        "rating": 4.7,
+        "reviewCount": 20,
+        "Salon": {
+          "id": "salon-uuid",
+          "SalonProfile": {
+            "name": "Salon ABC",
+            "address": "123 Đường ABC, TP.HCM"
+          }
+        }
+      }
+    ],
+    "salons": [
+      {
+        "id": "salon-uuid",
+        "rating": 4.8,
+        "reviewCount": 100,
+        "SalonProfile": {
+          "name": "Salon XYZ",
+          "address": "456 Đường XYZ, TP.HCM",
+          "description": "Salon chuyên cắt tóc nam"
+        }
+      }
+    ]
+  },
+  "totalResults": 2,
+  "message": "Search completed successfully"
+}
+```
 
 ## Appointment Endpoints
 
