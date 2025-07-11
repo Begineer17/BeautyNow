@@ -127,6 +127,7 @@ router.get('/top-salons', async (req, res) => {
         isVerified: true
       },
       include: includeCondition,
+      attributes: ['name', 'address', 'phone', 'description', 'portfolio'],
       order: [
         ['rating', 'DESC'],
         ['reviewCount', 'DESC'],
@@ -206,7 +207,7 @@ router.post('/search', async (req, res) => {
           model: SalonProfile,
           attributes: ['name', 'address', 'phone']
         }],
-        attributes: ['id', 'email', 'licenseStatus', 'isVerified', 'rating', 'reviewCount']
+        attributes: ['id', 'licenseStatus', 'isVerified', 'rating', 'reviewCount']
       }];
 
       // Nếu có filter theo location thì thêm điều kiện
