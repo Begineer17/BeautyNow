@@ -30,12 +30,20 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      price: {
+      originalPrice: {
+        type: Sequelize.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      currentPrice: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
       duration: {
         type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      isHome: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
       },
       illustrationImage: {

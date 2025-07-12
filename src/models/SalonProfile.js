@@ -37,6 +37,18 @@ const SalonProfile = sequelize.define('SalonProfile', {
     type: DataTypes.JSON,
     allowNull: true,
   },
+  priceRange: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  openTime: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  totalStaff: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

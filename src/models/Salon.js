@@ -92,6 +92,11 @@ const Salon = sequelize.define('Salon', {
     allowNull: true,
     defaultValue: 0,
   },
+  credit: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 100,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

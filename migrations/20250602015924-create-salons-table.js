@@ -45,6 +45,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
+      credit: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
       createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
@@ -60,35 +64,11 @@ module.exports = {
       TO authenticated
       USING ("id" = auth.uid());
     `);
-
-    await queryInterface.sequelize.query(`
-      CREATE POLICY "Salons can insert their own profile" ON "salons"
-      FOR INSERT
-      TO authenticated
-      WITH CHECK ("id" = auth.uid());
-    `);
-
-    await queryInterface.sequelize.query(`
-      CREATE POLICY "Salons can update their own profile" ON "salons"
-      FOR UPDATE
-      TO authenticated
-      USING ("id" = auth.uid());
-    `);
-
-    await queryInterface.sequelize.query(`
-      CREATE POLICY "Salons can delete their own profile" ON "salons"
-      FOR DELETE
-      TO authenticated
-      USING ("id" = auth.uid());
-    `);
   },
 
   async down(queryInterface, Sequelize) {
     // Drop policies and disable RLS
     await queryInterface.sequelize.query('DROP POLICY "Salons can view their own profile" ON "salons";');
-    await queryInterface.sequelize.query('DROP POLICY "Salons can insert their own profile" ON "salons";');
-    await queryInterface.sequelize.query('DROP POLICY "Salons can update their own profile" ON "salons";');
-    await queryInterface.sequelize.query('DROP POLICY "Salons can delete their own profile" ON "salons";');
     await queryInterface.sequelize.query('ALTER TABLE "salons" DISABLE ROW LEVEL SECURITY;');
     await queryInterface.dropTable('salons');
   }

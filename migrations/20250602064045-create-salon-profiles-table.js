@@ -39,6 +39,18 @@ module.exports = {
         type: Sequelize.JSON,
         allowNull: true,
       },
+      priceRange: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      openTime: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      totalStaff: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,

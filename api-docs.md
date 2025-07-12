@@ -1,4 +1,6 @@
-# BeautyNow API Documentation (Only allowed image files)
+# BeautyNow API Documentation
+
+**Note:** This API uses cookie-based authentication. JWT tokens are stored in HTTP-only cookies and automatically sent with requests.
 
 ## Authentication Endpoints
  ### POST /auth/register
@@ -23,7 +25,7 @@
  - **Body (JSON)**:
    - `email`: String
    - `password`: String
- - **Response**: `{ token: "JWT_TOKEN" }`
+ - **Response**: `{ token: "JWT_TOKEN" }` (token also set as HTTP-only cookie)
 
  ## Admin Endpoints
 
@@ -84,13 +86,16 @@
   - `address`: String (required)
   - `phone`: String (required)
   - `description`: String
-  - `portfolio`: Files (jpeg/jpg/png/mp4, max 5)
+  - `portfolio`: Files (jpeg/jpg/png, max 5)
+  - `priceRange`: String
+  - `openTime`: String (required)
+  - `totalStaff`: Number (required)
 - **Response**: `{ message: "Profile created", profile: {...} }`
 
 ### GET /salon-profile
 - **Description**: Get salon profile.
 
-- **Response**: `{ id, salonId, name, address, phone, description, portfolio, createdAt }`
+- **Response**: `{ id, salonId, name, address, phone, description, portfolio, priceRange, openTime, totalStaff, createdAt }`
 
 ### PUT /salon-profile
 - **Description**: Update salon profile.
@@ -100,7 +105,10 @@
   - `address`: String
   - `phone`: String
   - `description`: String
-  - `portfolio`: Files (jpeg/jpg/png/mp4, max 5)
+  - `portfolio`: Files (jpeg/jpg/png, max 5)
+  - `priceRange`: String
+  - `openTime`: String
+  - `totalStaff`: Number
 - **Response**: `{ message: "Profile updated", profile: {...} }`
 
 ### DELETE /salon-profile
@@ -115,15 +123,17 @@
   - `name`: String (required)
   - `category`: String Array (required, e.g: ["Cat1", "Cat2"])
   - `description`: String
-  - `price`: Number (required)
+  - `originalPrice`: Number (optional)
+  - `currentPrice`: Number (required)
   - `duration`: Number (required, minutes)
+  - `isHome`: Boolean (required)
   - `illustrationImage`: File (jpeg/jpg/png)
 - **Response**: `{ message: "Service created", service: {...} }`
 
 ### GET /salon-profile/services
 - **Description**: Get all services of a salon.
 
-- **Response**: Array of `{ id, salonId, name, description, price, duration, illustrationImage, createdAt }`
+- **Response**: Array of `{ id, salonId, name, category, description, originalPrice, currentPrice, duration, isHome, illustrationImage, rating, reviewCount, createdAt }`
 
 ### PUT /salon-profile/services/:serviceId
 - **Description**: Update a service.
@@ -131,8 +141,10 @@
 - **Body (form-data)**:
   - `name`: String
   - `description`: String
-  - `price`: Number
+  - `originalPrice`: Number
+  - `currentPrice`: Number
   - `duration`: Number (minutes)
+  - `isHome`: Boolean
   - `illustrationImage`: File (jpeg/jpg/png)
 - **Response**: `{ message: "Service updated", service: {...} }`
 
@@ -144,13 +156,14 @@
 ## Filters Endpoints
 
 ### POST /services/filter
-- **Description**: Filters services based on provided criteria including service category, price range, and salon location provided by all salons.
-- **Body (form-data)**:
-  - `category`: Array String (null for none)
-  - `minPrice`: Number (null for none)
-  - `maxPrice`: Number (null for none)
-  - `location`: String (null for none)
-- **Response**: `{ services:[...] }`
+- **Description**: Filters services based on provided criteria including service category, price range, salon location, and home service availability.
+- **Body (JSON)**:
+  - `category`: String (optional, single category to filter by)
+  - `minPrice`: Number (optional)
+  - `maxPrice`: Number (optional)
+  - `location`: String (optional, searches in salon address)
+  - `isHome`: Boolean (optional, filter for home services)
+- **Response**: `{ services: [...] }`
 
 ### Get Top Services
 **Endpoint:** `GET /services/top`
@@ -176,8 +189,9 @@ GET /services/top?limit=5&category=hair
       "name": "Dịch vụ cắt tóc",
       "category": ["hair"],
       "description": "Mô tả dịch vụ",
-      "price": "100000.00",
+      "currentPrice": "100000.00",
       "duration": 60,
+      "isHome": true,
       "rating": 4.8,
       "reviewCount": 25,
       "Salon": {
@@ -217,18 +231,18 @@ GET /services/top-salons?limit=5&location=HCM
   "success": true,
   "data": [
     {
-      "id": "salon-uuid",
-      "email": "salon@example.com",
-      "licenseStatus": "verified",
-      "isVerified": true,
-      "rating": 4.9,
-      "reviewCount": 150,
-      "SalonProfile": {
-        "name": "Salon XYZ",
-        "address": "456 Đường XYZ, TP.HCM",
-        "phone": "0987654321",
-        "description": "Salon chuyên nghiệp",
-        "portfolio": {...}
+      "name": "Salon XYZ",
+      "address": "456 Đường XYZ, TP.HCM",
+      "phone": "0987654321",
+      "description": "Salon chuyên nghiệp",
+      "portfolio": {...},
+      "priceRange": "100,000 - 500,000 VND",
+      "openTime": "8:00 - 22:00",
+      "totalStaff": 10,
+      "Salon": {
+        "rating": 4.9,
+        "reviewCount": 150,
+        "credit": 1200
       }
     }
   ],
@@ -246,7 +260,6 @@ GET /services/top-salons?limit=5&location=HCM
 - `category` (optional): Filter theo category service
 - `location` (optional): Filter theo địa điểm salon
 - `minPrice`, `maxPrice` (optional): Khoảng giá service
-- `limit` (optional): Số lượng kết quả trả về (default: 20)
 - `type` (optional): 'services' | 'salons' | 'both' (default: 'both')
 
 **Response:**
@@ -260,27 +273,42 @@ GET /services/top-salons?limit=5&location=HCM
         "name": "Dịch vụ cắt tóc nam",
         "category": ["hair"],
         "description": "Cắt tóc chuyên nghiệp",
-        "price": "80000.00",
+        "currentPrice": "80000.00",
+        "originalPrice": "100000.00",
+        "duration": 60,
+        "isHome": true,
         "rating": 4.7,
         "reviewCount": 20,
+        "illustrationImage": "url_to_image",
         "Salon": {
           "id": "salon-uuid",
+          "licenseStatus": "verified",
+          "isVerified": true,
+          "rating": 4.8,
+          "reviewCount": 25,
+          "credit": 1000,
           "SalonProfile": {
             "name": "Salon ABC",
-            "address": "123 Đường ABC, TP.HCM"
+            "address": "123 Đường ABC, TP.HCM",
+            "phone": "0123456789"
           }
         }
       }
     ],
     "salons": [
       {
-        "id": "salon-uuid",
-        "rating": 4.8,
-        "reviewCount": 100,
-        "SalonProfile": {
-          "name": "Salon XYZ",
-          "address": "456 Đường XYZ, TP.HCM",
-          "description": "Salon chuyên cắt tóc nam"
+        "name": "Salon XYZ",
+        "address": "456 Đường XYZ, TP.HCM",
+        "phone": "0987654321",
+        "description": "Salon chuyên cắt tóc nam",
+        "portfolio": {...},
+        "priceRange": "50,000 - 200,000 VND",
+        "openTime": "8:00 - 20:00",
+        "totalStaff": 5,
+        "Salon": {
+          "rating": 4.8,
+          "reviewCount": 100,
+          "credit": 1500
         }
       }
     ]

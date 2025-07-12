@@ -28,12 +28,20 @@ const Service = sequelize.define('Service', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
-  price: {
+  originalPrice: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+  },
+  currentPrice: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
   duration: {
     type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  isHome: {
+    type: DataTypes.BOOLEAN,
     allowNull: false,
   },
   illustrationImage: {

@@ -13,17 +13,20 @@ const router = express.Router();
 */
 router.post('/filter', async (req, res) => {
   try {
-    const { category, minPrice, maxPrice, location } = req.body;
+    const { category, minPrice, maxPrice, location, isHome } = req.body;
     
     // Điều kiện lọc cho Service
     const serviceWhere = {};
+    if(isHome) {
+      serviceWhere.isHome = isHome;
+    }
     if (category) {
       serviceWhere.category = { [Op.contains]: [category] };
     }
     if (minPrice || maxPrice) {
-      serviceWhere.price = {};
-      if (minPrice) serviceWhere.price[Op.gte] = parseFloat(minPrice);
-      if (maxPrice) serviceWhere.price[Op.lte] = parseFloat(maxPrice);
+      serviceWhere.currentPrice = {};
+      if (minPrice) serviceWhere.currentPrice[Op.gte] = parseFloat(minPrice);
+      if (maxPrice) serviceWhere.currentPrice[Op.lte] = parseFloat(maxPrice);
     }
 
     // Nếu lọc theo vị trí thì join thêm Salon và SalonProfile
@@ -110,28 +113,19 @@ router.get('/top-salons', async (req, res) => {
   try {
     const { limit = 10, location } = req.query;
     
-    const includeCondition = [{
-      model: SalonProfile,
-      attributes: ['name', 'address', 'phone', 'description', 'portfolio']
-    }];
-
+    const whereCondition = {};
     if (location) {
-      includeCondition[0].where = {
-        address: { [Op.iLike]: `%${location}%` }
-      };
+      whereCondition.address = { [Op.iLike]: `%${location}%` };
     }
 
-    const topSalons = await Salon.findAll({
-      where: {
-        licenseStatus: 'verified',
-        isVerified: true
-      },
-      include: includeCondition,
-      attributes: ['name', 'address', 'phone', 'description', 'portfolio'],
+    const topSalons = await SalonProfile.findAll({
+      where: whereCondition,
+      include: [{model: Salon, attributes: ['rating', 'reviewCount', 'credit']}],
+      attributes: ['name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff'],
       order: [
-        ['rating', 'DESC'],
-        ['reviewCount', 'DESC'],
-        ['createdAt', 'DESC']
+        [Salon, 'rating', 'DESC'],
+        [Salon, 'reviewCount', 'DESC'],
+        [Salon, 'credit', 'DESC']
       ],
       limit: parseInt(limit),
     });
@@ -169,7 +163,7 @@ router.post('/search', async (req, res) => {
       location, 
       minPrice, 
       maxPrice, 
-      limit = 20, 
+      // limit = 20, 
       type = 'both' 
     } = req.body;
 
@@ -196,9 +190,9 @@ router.post('/search', async (req, res) => {
       }
 
       if (minPrice || maxPrice) {
-        serviceWhere.price = {};
-        if (minPrice) serviceWhere.price[Op.gte] = parseFloat(minPrice);
-        if (maxPrice) serviceWhere.price[Op.lte] = parseFloat(maxPrice);
+        serviceWhere.currentPrice = {};
+        if (minPrice) serviceWhere.currentPrice[Op.gte] = parseFloat(minPrice);
+        if (maxPrice) serviceWhere.currentPrice[Op.lte] = parseFloat(maxPrice);
       }
 
       const serviceInclude = [{
@@ -207,7 +201,7 @@ router.post('/search', async (req, res) => {
           model: SalonProfile,
           attributes: ['name', 'address', 'phone']
         }],
-        attributes: ['id', 'licenseStatus', 'isVerified', 'rating', 'reviewCount']
+        attributes: ['id', 'licenseStatus', 'isVerified', 'rating', 'reviewCount', 'credit']
       }];
 
       // Nếu có filter theo location thì thêm điều kiện
@@ -222,40 +216,38 @@ router.post('/search', async (req, res) => {
         include: serviceInclude,
         order: [
           ['rating', 'DESC'],
-          ['reviewCount', 'DESC']
+          ['reviewCount', 'DESC'],
+          ['credit', 'DESC']
         ],
-        limit: parseInt(limit),
+        // limit: parseInt(limit),
       });
     }
 
     // Tìm kiếm Salons
     if (type === 'salons' || type === 'both') {
-      const salonInclude = [{
-        model: SalonProfile,
-        where: {
-          [Op.or]: [
-            { name: { [Op.iLike]: `%${query}%` } },
-            { description: { [Op.iLike]: `%${query}%` } }
-          ]
-        },
-        attributes: ['name', 'address', 'phone', 'description', 'portfolio']
-      }];
+      const salonWhere = {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${query}%` } },
+          { description: { [Op.iLike]: `%${query}%` } }
+        ]
+      };
 
       if (location) {
-        salonInclude[0].where.address = { [Op.iLike]: `%${location}%` };
+        salonWhere.address = { [Op.iLike]: `%${location}%` };
       }
 
-      results.salons = await Salon.findAll({
-        where: {
-          licenseStatus: 'verified',
-          isVerified: true
-        },
-        include: salonInclude,
+      results.salons = await SalonProfile.findAll({
+        where: salonWhere,
+        include: [{
+          model: Salon, 
+          attributes: ['rating', 'reviewCount', 'credit']
+        }],
+        attributes: ['name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff'],
         order: [
-          ['rating', 'DESC'],
-          ['reviewCount', 'DESC']
+          [Salon, 'rating', 'DESC'],
+          [Salon, 'reviewCount', 'DESC'],
+          [Salon, 'credit', 'DESC']
         ],
-        limit: parseInt(limit),
       });
     }
 

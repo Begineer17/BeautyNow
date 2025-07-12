@@ -60,7 +60,7 @@ const auth = async (req, res, next) => {
 
 // Các route cho Salon Profile (giữ nguyên)
 router.post('/', auth, upload.array('portfolio', 5), async (req, res) => {
-  const { name, address, phone, description } = req.body;
+  const { name, address, phone, description, priceRange, openTime, totalStaff } = req.body;
   try {
     const existingProfile = await SalonProfile.findOne({ where: { salonId: req.salonId } });
     if (existingProfile) {
@@ -82,6 +82,9 @@ router.post('/', auth, upload.array('portfolio', 5), async (req, res) => {
       phone,
       description,
       portfolio,
+      priceRange,
+      openTime,
+      totalStaff
     });
 
     res.status(201).json({ message: 'Profile created', profile });
@@ -103,7 +106,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 router.put('/', auth, upload.array('portfolio', 5), async (req, res) => {
-  const { name, address, phone, description } = req.body;
+  const { name, address, phone, description, priceRange, openTime, totalStaff } = req.body;
   try {
     const profile = await SalonProfile.findOne({ where: { salonId: req.salonId } });
     if (!profile) {
@@ -119,7 +122,7 @@ router.put('/', auth, upload.array('portfolio', 5), async (req, res) => {
       }
     }
 
-    await profile.update({ name, address, phone, description, portfolio });
+    await profile.update({ name, address, phone, description, portfolio, priceRange, openTime, totalStaff });
     res.status(200).json({ message: 'Profile updated', profile });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -141,7 +144,7 @@ router.delete('/', auth, async (req, res) => {
 
 // Các route cho Service (cập nhật để hỗ trợ illustrationImage)
 router.post('/services', auth, serviceUpload.single('illustrationImage'), async (req, res) => {
-  const { name, category, description, price, duration } = req.body;
+  const { name, category, description, originalPrice, currentPrice, duration, isHome } = req.body;
   try {
     let illustrationImage = null;
     if (req.file) {
@@ -155,8 +158,10 @@ router.post('/services', auth, serviceUpload.single('illustrationImage'), async 
       name,
       category: categoryArray,
       description,
-      price,
+      originalPrice,
+      currentPrice,
       duration,
+      isHome,
       illustrationImage,
     });
     res.status(201).json({ message: 'Service created', service });
@@ -175,7 +180,7 @@ router.get('/services', auth, async (req, res) => {
 });
 
 router.put('/services/:serviceId', auth, serviceUpload.single('illustrationImage'), async (req, res) => {
-  const { name, description, price, duration } = req.body;
+  const { name, description, originalPrice, currentPrice, duration, isHome } = req.body;
   try {
     const service = await Service.findOne({
       where: { id: req.params.serviceId, salonId: req.salonId },
@@ -189,7 +194,7 @@ router.put('/services/:serviceId', auth, serviceUpload.single('illustrationImage
       illustrationImage = await uploadFile(req.file.path, 'service_images');
     }
 
-    await service.update({ name, description, price, duration, illustrationImage });
+    await service.update({ name, description, originalPrice, currentPrice, duration, isHome, illustrationImage });
     res.status(200).json({ message: 'Service updated', service });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
