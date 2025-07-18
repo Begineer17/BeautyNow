@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
 const SalonProfile = require('../models/SalonProfile');
+const Salon = require('../models/Salon');
 const Service = require('../models/Service');
 const { uploadFile } = require('../config/cloudinary');
 
@@ -99,7 +100,8 @@ router.get('/', auth, async (req, res) => {
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
-    res.status(200).json(profile);
+    const salon = await Salon.findOne({where: {id: req.salonId}});
+    res.status(200).json(profile, salon.email, salon.isVerified);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

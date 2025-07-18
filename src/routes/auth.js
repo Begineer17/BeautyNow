@@ -6,6 +6,8 @@ const multer = require('multer');
 const path = require('path');
 const User = require('../models/User');
 const Salon = require('../models/Salon');
+const UserProfile = require('../models/UserProfile')
+const SalonProfile = require('../models/SalonProfile')
 
 const router = express.Router();
 
@@ -160,7 +162,17 @@ router.post('/login', async (req, res) => {
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 24 * 60 * 60 * 1000 // 1 ngày
     });
-    res.status(200).json({ message: 'Login successful' });
+    if (role === 'user') {
+      const userProfile = await UserProfile.findOne({ where: { userId: account.id } });
+      n = userProfile.fullName;
+      i = userProfile.faceImage;
+    }
+    else {
+      const salonProfile = await SalonProfile.findOne({where:{salonId: account.id}});
+      n = salonProfile.name;
+      i = salonProfile.portfolio;
+    }
+    res.status(200).json({ message: 'Login successful', name: n, image: i });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

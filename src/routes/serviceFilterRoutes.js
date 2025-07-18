@@ -120,12 +120,12 @@ router.get('/top-salons', async (req, res) => {
 
     const topSalons = await SalonProfile.findAll({
       where: whereCondition,
-      include: [{model: Salon, attributes: ['rating', 'reviewCount', 'credit']}],
+      include: [{model: Salon, attributes: ['rating', 'reviewCount']}],
       attributes: ['name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff'],
       order: [
         [Salon, 'rating', 'DESC'],
         [Salon, 'reviewCount', 'DESC'],
-        [Salon, 'credit', 'DESC']
+        [Salon, 'DESC']
       ],
       limit: parseInt(limit),
     });
@@ -201,7 +201,7 @@ router.post('/search', async (req, res) => {
           model: SalonProfile,
           attributes: ['name', 'address', 'phone']
         }],
-        attributes: ['id', 'licenseStatus', 'isVerified', 'rating', 'reviewCount', 'credit']
+        attributes: ['id', 'licenseStatus', 'isVerified', 'rating', 'reviewCount']
       }];
 
       // Nếu có filter theo location thì thêm điều kiện
@@ -217,7 +217,6 @@ router.post('/search', async (req, res) => {
         order: [
           ['rating', 'DESC'],
           ['reviewCount', 'DESC'],
-          ['credit', 'DESC']
         ],
         // limit: parseInt(limit),
       });
@@ -240,13 +239,13 @@ router.post('/search', async (req, res) => {
         where: salonWhere,
         include: [{
           model: Salon, 
-          attributes: ['rating', 'reviewCount', 'credit']
+          attributes: ['rating', 'reviewCount']
         }],
         attributes: ['name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff'],
         order: [
           [Salon, 'rating', 'DESC'],
           [Salon, 'reviewCount', 'DESC'],
-          [Salon, 'credit', 'DESC']
+          [Salon, 'DESC']
         ],
       });
     }
