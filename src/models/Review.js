@@ -70,8 +70,8 @@ const Review = sequelize.define('Review', {
   timestamps: false,
 });
 
-User.hasMany(Review, { foreignKey: 'userId' });
-Review.belongsTo(User, { foreignKey: 'userId' });
+// User.hasMany(Review, { foreignKey: 'userId' });
+// Review.belongsTo(User, { foreignKey: 'userId' });
 
 Salon.hasMany(Review, { foreignKey: 'salonId' });
 Review.belongsTo(Salon, { foreignKey: 'salonId' });
