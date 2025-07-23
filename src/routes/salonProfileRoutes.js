@@ -101,7 +101,11 @@ router.get('/', auth, async (req, res) => {
       return res.status(404).json({ message: 'Profile not found' });
     }
     const salon = await Salon.findOne({where: {id: req.salonId}});
-    res.status(200).json(profile, salon.email, salon.isVerified);
+    res.status(200).json({
+      profile, 
+      email: salon.email, 
+      isVerified: salon.isVerified
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
