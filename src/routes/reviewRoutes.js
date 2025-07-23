@@ -156,8 +156,8 @@ router.post('/:reviewId/report', auth, async (req, res) => {
 });
 
 // Xem tất cả đánh giá
-// GET /salon?limit=<int> 
-router.get('/salon', auth, async (req, res) => {
+// GET ?limit=<int> 
+router.get('/', auth, async (req, res) => {
   try {
     const { limit = 10 } = req.query;
     const reviews = await Review.findAll({order: [['rating', 'DESC']], limit: limit});
