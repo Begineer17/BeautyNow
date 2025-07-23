@@ -1,5 +1,5 @@
 const express = require('express');
-const { Op } = require('sequelize');
+const { Op, literal } = require('sequelize');
 const Service = require('../models/Service');
 const Salon = require('../models/Salon');
 const SalonProfile = require('../models/SalonProfile');
