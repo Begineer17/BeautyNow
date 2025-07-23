@@ -86,9 +86,7 @@ router.get('/top', async (req, res) => {
         [literal(`(
             CASE 
               WHEN "Service"."reviewCount" > 0 AND "Service"."rating" IS NOT NULL THEN
-                ( (("Service"."rating") + ${z}*${z}/(2*"Service"."reviewCount") - ${z} * SQRT((("Service"."rating")*(1-("Service"."rating"))+${z}*${z}/(4*"Service"."reviewCount"))/"Service"."reviewCount")) 
-                  / (1+${z}*${z}/"Service"."reviewCount")
-                )
+                "Service"."rating" * LOG("Service"."reviewCount" + 1)
               ELSE 0
             END
           )`), 'DESC']
@@ -131,12 +129,19 @@ router.get('/top-salons', async (req, res) => {
       include: [{model: Salon, attributes: ['rating', 'reviewCount']}],
       order: [
         // [literal('"Salon"."rating" * LOG("Salon"."reviewCount" + 1)'), 'DESC']
-        [literal(`(
+        // [literal(`(
+        //     CASE 
+        //       WHEN "Salon"."reviewCount" > 0 AND "Salon"."rating" IS NOT NULL THEN
+        //         ( (("Salon"."rating") + ${z}*${z}/(2*"Salon"."reviewCount") - ${z} * SQRT((("Salon"."rating")*(1-("Salon"."rating"))+${z}*${z}/(4*"Salon"."reviewCount"))/"Salon"."reviewCount")) 
+        //           / (1+${z}*${z}/"Salon"."reviewCount")
+        //         )
+        //       ELSE 0
+        //     END
+        //   )`), 'DESC']
+          [literal(`(
             CASE 
               WHEN "Salon"."reviewCount" > 0 AND "Salon"."rating" IS NOT NULL THEN
-                ( (("Salon"."rating") + ${z}*${z}/(2*"Salon"."reviewCount") - ${z} * SQRT((("Salon"."rating")*(1-("Salon"."rating"))+${z}*${z}/(4*"Salon"."reviewCount"))/"Salon"."reviewCount")) 
-                  / (1+${z}*${z}/"Salon"."reviewCount")
-                )
+                "Salon"."rating" * LOG("Salon"."reviewCount" + 1)
               ELSE 0
             END
           )`), 'DESC']
@@ -232,9 +237,7 @@ router.post('/search', async (req, res) => {
           [literal(`(
             CASE 
               WHEN "Service"."reviewCount" > 0 AND "Service"."rating" IS NOT NULL THEN
-                ( (("Service"."rating") + ${z}*${z}/(2*"Service"."reviewCount") - ${z} * SQRT((("Service"."rating")*(1-("Service"."rating"))+${z}*${z}/(4*"Service"."reviewCount"))/"Service"."reviewCount")) 
-                  / (1+${z}*${z}/"Service"."reviewCount")
-                )
+                "Service"."rating" * LOG("Service"."reviewCount" + 1)
               ELSE 0
             END
           )`), 'DESC']
@@ -267,9 +270,7 @@ router.post('/search', async (req, res) => {
           [literal(`(
             CASE 
               WHEN "Salon"."reviewCount" > 0 AND "Salon"."rating" IS NOT NULL THEN
-                ( (("Salon"."rating") + ${z}*${z}/(2*"Salon"."reviewCount") - ${z} * SQRT((("Salon"."rating")*(1-("Salon"."rating"))+${z}*${z}/(4*"Salon"."reviewCount"))/"Salon"."reviewCount")) 
-                  / (1+${z}*${z}/"Salon"."reviewCount")
-                )
+                "Salon"."rating" * LOG("Salon"."reviewCount" + 1)
               ELSE 0
             END
           )`), 'DESC']
