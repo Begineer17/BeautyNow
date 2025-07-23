@@ -49,6 +49,11 @@ const SalonProfile = sequelize.define('SalonProfile', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  tag: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+    defaultValue: []
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
