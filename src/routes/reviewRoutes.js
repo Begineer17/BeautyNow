@@ -8,20 +8,20 @@ const { uploadFile } = require('../config/cloudinary'); // Sử dụng Cloudinar
 const router = express.Router();
 
 // Middleware xác thực người dùng
-const auth = async (req, res, next) => {
-  try {
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: 'No token provided' });
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'user') {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-    req.userId = decoded.id;
-    next();
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid token' });
-  }
-};
+// const auth = async (req, res, next) => {
+//   try {
+//     const token = req.cookies.token;
+//     if (!token) return res.status(401).json({ message: 'No token provided' });
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     if (decoded.role !== 'user') {
+//       return res.status(403).json({ message: 'Access denied' });
+//     }
+//     req.userId = decoded.id;
+//     next();
+//   } catch (error) {
+//     res.status(401).json({ message: 'Invalid token' });
+//   }
+// };
 
 // Cấu hình Multer upload cho ảnh đánh giá
 const storage = multer.diskStorage({
@@ -46,7 +46,7 @@ const upload = multer({
 });
 
 // Tạo đánh giá mới (cho salon)
-router.post('/salon', auth, upload.array('images', 5), async (req, res) => {
+router.post('/salon', upload.array('images', 5), async (req, res) => {
   const { userName, rating, comment, salonId } = req.body;
   if (!salonId) {
     return res.status(400).json({ message: 'salonId is required' });
@@ -74,7 +74,7 @@ router.post('/salon', auth, upload.array('images', 5), async (req, res) => {
 });
 
 // Xem tất cả đánh giá của 1 salon
-router.get('/salon/:salonId', auth, async (req, res) => {
+router.get('/salon/:salonId', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
     const reviews = await Review.findAll({ where: { salonId: req.params.salonId }, order: [['rating', 'DESC']], limit: limit });
@@ -85,7 +85,7 @@ router.get('/salon/:salonId', auth, async (req, res) => {
 });
 
 // Tạo đánh giá mới (cho service)
-router.post('/service', auth, upload.array('images', 5), async (req, res) => {
+router.post('/service', upload.array('images', 5), async (req, res) => {
   const { userName, rating, comment, serviceId } = req.body;
   if (!serviceId) {
     return res.status(400).json({ message: 'serviceId is required' });
@@ -113,7 +113,7 @@ router.post('/service', auth, upload.array('images', 5), async (req, res) => {
 });
 
 // Xem tất cả đánh giá của 1 service
-router.get('/service/:serviceID', auth, async (req, res) => {
+router.get('/service/:serviceID', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
     const reviews = await Review.findAll({ where: { serviceId: req.params.serviceId }, order: [['rating', 'DESC']], limit: limit });
@@ -124,7 +124,7 @@ router.get('/service/:serviceID', auth, async (req, res) => {
 });
 
 // Phản hồi đánh giá (cho admin hoặc salon)
-router.post('/:reviewId/reply', auth, async (req, res) => {
+router.post('/:reviewId/reply', async (req, res) => {
   if (req.role !== 'admin' && req.role !== 'salon') {
     return res.status(403).json({ message: 'Access denied' });
   }
@@ -142,7 +142,7 @@ router.post('/:reviewId/reply', auth, async (req, res) => {
 });
 
 // Báo cáo đánh giá: đánh dấu đánh giá đã bị báo cáo
-router.post('/:reviewId/report', auth, async (req, res) => {
+router.post('/:reviewId/report', async (req, res) => {
   try {
     const review = await Review.findByPk(req.params.reviewId);
     if (!review) {
@@ -157,7 +157,7 @@ router.post('/:reviewId/report', auth, async (req, res) => {
 
 // Xem tất cả đánh giá
 // GET ?limit=<int> 
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
     const reviews = await Review.findAll({order: [['rating', 'DESC']], limit: limit});
