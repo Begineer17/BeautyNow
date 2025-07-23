@@ -125,7 +125,6 @@ router.get('/top-salons', async (req, res) => {
       order: [
         [Salon, 'rating', 'DESC'],
         [Salon, 'reviewCount', 'DESC'],
-        [Salon, 'DESC']
       ],
       limit: parseInt(limit),
     });
