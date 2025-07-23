@@ -33,13 +33,22 @@ router.post('/service/:serviceId', async (req, res) => {
 
         // Lấy tất cả các Service của Salon để tính tổng lượt review và trung bình rating chung
         const services = await Service.findAll({ where: { salonId: service.salonId } });
-        let salonTotalReviews = 0;
-        let salonRatingSum = 0;
+        let serviceReviewCount = 0;
+        let serviceRatingSum = 0;
         services.forEach(svc => {
             const svcReviews = svc.reviewCount || 0;
-            salonTotalReviews += svcReviews;
-            salonRatingSum += (svc.rating || 0) * svcReviews;
+            serviceReviewCount += svcReviews;
+            serviceRatingSum += (svc.rating || 0) * svcReviews;
         });
+
+        // Lấy tất cả review trực tiếp về Salon
+        const salonReviews = await Review.findAll({ where: { salonId: service.salonId, serviceId: null } });
+        const salonDirectReviewCount = salonReviews.length;
+        const salonDirectRatingSum = salonReviews.reduce((sum, review) => sum + review.rating, 0);
+
+        // Tổng hợp cả hai loại
+        const salonTotalReviews = serviceReviewCount + salonDirectReviewCount;
+        const salonRatingSum = serviceRatingSum + salonDirectRatingSum;
         const salonAvgRating = salonTotalReviews > 0 ? salonRatingSum / salonTotalReviews : 0;
 
         // Cập nhật rating và reviewCount cho Salon
