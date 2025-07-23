@@ -47,7 +47,7 @@ const upload = multer({
 
 // Tạo đánh giá mới (cho salon)
 router.post('/salon', auth, upload.array('images', 5), async (req, res) => {
-  const { rating, comment, salonId } = req.body;
+  const { userName, rating, comment, salonId } = req.body;
   if (!salonId) {
     return res.status(400).json({ message: 'salonId is required' });
   }
@@ -60,7 +60,8 @@ router.post('/salon', auth, upload.array('images', 5), async (req, res) => {
       }
     }
     const review = await Review.create({
-      userId: req.userId,
+      // userId: req.userId,
+      userName: userName,
       salonId: salonId,
       rating,
       comment,
@@ -75,7 +76,8 @@ router.post('/salon', auth, upload.array('images', 5), async (req, res) => {
 // Xem tất cả đánh giá của 1 salon
 router.get('/salon/:salonId', auth, async (req, res) => {
   try {
-    const reviews = await Review.findAll({ where: { salonId: req.params.salonId } });
+    const { limit = 10 } = req.query;
+    const reviews = await Review.findAll({ where: { salonId: req.params.salonId }, order: [['rating', 'DESC']], limit: limit });
     res.status(200).json({ reviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -84,7 +86,7 @@ router.get('/salon/:salonId', auth, async (req, res) => {
 
 // Tạo đánh giá mới (cho service)
 router.post('/service', auth, upload.array('images', 5), async (req, res) => {
-  const { rating, comment, serviceId } = req.body;
+  const { userName, rating, comment, serviceId } = req.body;
   if (!serviceId) {
     return res.status(400).json({ message: 'serviceId is required' });
   }
@@ -97,7 +99,8 @@ router.post('/service', auth, upload.array('images', 5), async (req, res) => {
       }
     }
     const review = await Review.create({
-      userId: req.userId,
+      // userId: req.userId,
+      userName: userName,
       serviceId: serviceId,
       rating,
       comment,
@@ -112,7 +115,8 @@ router.post('/service', auth, upload.array('images', 5), async (req, res) => {
 // Xem tất cả đánh giá của 1 service
 router.get('/service/:serviceID', auth, async (req, res) => {
   try {
-    const reviews = await Review.findAll({ where: { serviceId: req.params.serviceId } });
+    const { limit = 10 } = req.query;
+    const reviews = await Review.findAll({ where: { serviceId: req.params.serviceId }, order: [['rating', 'DESC']], limit: limit });
     res.status(200).json({ reviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -146,6 +150,18 @@ router.post('/:reviewId/report', auth, async (req, res) => {
     }
     await review.update({ reported: true });
     res.status(200).json({ message: 'Review reported', review });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Xem tất cả đánh giá
+// GET /salon?limit=<int> 
+router.get('/salon', auth, async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    const reviews = await Review.findAll({order: [['rating', 'DESC']], limit: limit});
+    res.status(200).json({ reviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

@@ -10,14 +10,18 @@ const Review = sequelize.define('Review', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  userId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id',
-    },
-    onDelete: 'CASCADE',
+  // userId: {
+  //   type: DataTypes.UUID,
+  //   allowNull: false,
+  //   references: {
+  //     model: 'users',
+  //     key: 'id',
+  //   },
+  //   onDelete: 'CASCADE',
+  // },
+  userName: {
+    type: DataTypes.TEXT,
+    allowNull: true,
   },
   salonId: {
     type: DataTypes.UUID,

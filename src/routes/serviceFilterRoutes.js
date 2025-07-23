@@ -4,6 +4,8 @@ const Service = require('../models/Service');
 const Salon = require('../models/Salon');
 const SalonProfile = require('../models/SalonProfile');
 
+const z = 1.96; // 95% confidence
+
 const router = express.Router();
 
 /*
@@ -81,9 +83,15 @@ router.get('/top', async (req, res) => {
         attributes: ['id', 'email', 'licenseStatus', 'isVerified']
       }],
       order: [
-        ['rating', 'DESC'],
-        ['reviewCount', 'DESC'],
-        ['createdAt', 'DESC']
+        [literal(`(
+            CASE 
+              WHEN "Service"."reviewCount" > 0 AND "Service"."rating" IS NOT NULL THEN
+                ( (("Service"."rating") + ${z}*${z}/(2*"Service"."reviewCount") - ${z} * SQRT((("Service"."rating")*(1-("Service"."rating"))+${z}*${z}/(4*"Service"."reviewCount"))/"Service"."reviewCount")) 
+                  / (1+${z}*${z}/"Service"."reviewCount")
+                )
+              ELSE 0
+            END
+          )`), 'DESC']
       ],
       limit: parseInt(limit),
     });
@@ -122,8 +130,16 @@ router.get('/top-salons', async (req, res) => {
       where: whereCondition,
       include: [{model: Salon, attributes: ['rating', 'reviewCount']}],
       order: [
-        [Salon, 'rating', 'DESC'],
-        [Salon, 'reviewCount', 'DESC'],
+        // [literal('"Salon"."rating" * LOG("Salon"."reviewCount" + 1)'), 'DESC']
+        [literal(`(
+            CASE 
+              WHEN "Salon"."reviewCount" > 0 AND "Salon"."rating" IS NOT NULL THEN
+                ( (("Salon"."rating") + ${z}*${z}/(2*"Salon"."reviewCount") - ${z} * SQRT((("Salon"."rating")*(1-("Salon"."rating"))+${z}*${z}/(4*"Salon"."reviewCount"))/"Salon"."reviewCount")) 
+                  / (1+${z}*${z}/"Salon"."reviewCount")
+                )
+              ELSE 0
+            END
+          )`), 'DESC']
       ],
       limit: parseInt(limit),
     });
@@ -213,8 +229,15 @@ router.post('/search', async (req, res) => {
         where: serviceWhere,
         include: serviceInclude,
         order: [
-          ['rating', 'DESC'],
-          ['reviewCount', 'DESC'],
+          [literal(`(
+            CASE 
+              WHEN "Service"."reviewCount" > 0 AND "Service"."rating" IS NOT NULL THEN
+                ( (("Service"."rating") + ${z}*${z}/(2*"Service"."reviewCount") - ${z} * SQRT((("Service"."rating")*(1-("Service"."rating"))+${z}*${z}/(4*"Service"."reviewCount"))/"Service"."reviewCount")) 
+                  / (1+${z}*${z}/"Service"."reviewCount")
+                )
+              ELSE 0
+            END
+          )`), 'DESC']
         ],
         // limit: parseInt(limit),
       });
@@ -241,9 +264,15 @@ router.post('/search', async (req, res) => {
         }],
         attributes: ['id','name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff'],
         order: [
-          [Salon, 'rating', 'DESC'],
-          [Salon, 'reviewCount', 'DESC'],
-          [Salon, 'DESC']
+          [literal(`(
+            CASE 
+              WHEN "Salon"."reviewCount" > 0 AND "Salon"."rating" IS NOT NULL THEN
+                ( (("Salon"."rating") + ${z}*${z}/(2*"Salon"."reviewCount") - ${z} * SQRT((("Salon"."rating")*(1-("Salon"."rating"))+${z}*${z}/(4*"Salon"."reviewCount"))/"Salon"."reviewCount")) 
+                  / (1+${z}*${z}/"Salon"."reviewCount")
+                )
+              ELSE 0
+            END
+          )`), 'DESC']
         ],
       });
     }

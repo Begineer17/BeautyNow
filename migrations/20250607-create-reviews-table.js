@@ -9,14 +9,18 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
-      userId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: 'users',
-          key: 'id',
-        },
-        onDelete: 'CASCADE',
+      // userId: {
+      //   type: Sequelize.UUID,
+      //   allowNull: false,
+      //   references: {
+      //     model: 'users',
+      //     key: 'id',
+      //   },
+      //   onDelete: 'CASCADE',
+      // },
+      userName: {
+        type: Sequelize.TEXT,
+        allowNull: true,
       },
       salonId: {
         type: Sequelize.UUID,
