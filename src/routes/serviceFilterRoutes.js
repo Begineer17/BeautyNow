@@ -121,7 +121,6 @@ router.get('/top-salons', async (req, res) => {
     const topSalons = await SalonProfile.findAll({
       where: whereCondition,
       include: [{model: Salon, attributes: ['rating', 'reviewCount']}],
-      attributes: ['id', 'name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff', 'tag'],
       order: [
         [Salon, 'rating', 'DESC'],
         [Salon, 'reviewCount', 'DESC'],
