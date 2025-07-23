@@ -61,7 +61,7 @@ const auth = async (req, res, next) => {
 
 // Các route cho Salon Profile (giữ nguyên)
 router.post('/', auth, upload.array('portfolio', 5), async (req, res) => {
-  const { name, address, phone, description, priceRange, openTime, totalStaff } = req.body;
+  const { name, address, phone, description, priceRange, openTime, totalStaff, tag } = req.body;
   try {
     const existingProfile = await SalonProfile.findOne({ where: { salonId: req.salonId } });
     if (existingProfile) {
@@ -85,7 +85,8 @@ router.post('/', auth, upload.array('portfolio', 5), async (req, res) => {
       portfolio,
       priceRange,
       openTime,
-      totalStaff
+      totalStaff,
+      tag
     });
 
     res.status(201).json({ message: 'Profile created', profile });
