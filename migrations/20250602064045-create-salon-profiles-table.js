@@ -51,6 +51,11 @@ module.exports = {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      tag: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        allowNull: true,
+        defaultValue: []
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
