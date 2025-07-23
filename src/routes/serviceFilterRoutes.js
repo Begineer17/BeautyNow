@@ -240,7 +240,7 @@ router.post('/search', async (req, res) => {
           model: Salon, 
           attributes: ['rating', 'reviewCount']
         }],
-        attributes: ['name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff'],
+        attributes: ['id','name', 'address', 'phone', 'description', 'portfolio', 'priceRange', 'openTime', 'totalStaff'],
         order: [
           [Salon, 'rating', 'DESC'],
           [Salon, 'reviewCount', 'DESC'],
