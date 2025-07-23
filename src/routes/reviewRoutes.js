@@ -116,7 +116,7 @@ router.post('/service', upload.array('images', 5), async (req, res) => {
 router.get('/service/:serviceID', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
-    const reviews = await Review.findAll({ where: { serviceId: req.params.serviceId }, order: [['rating', 'DESC']], limit: limit });
+    const reviews = await Review.findAll({ where: { serviceId: req.params.serviceID }, order: [['rating', 'DESC']], limit: limit });
     res.status(200).json({ reviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
