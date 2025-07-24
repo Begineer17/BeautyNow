@@ -1,6 +1,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const Review = require('../models/Review'); // Sẽ tạo model Review ở bước 3
+const Review = require('../models/Review');
+const Service = require('../models/Service');
+const Salon = require('../models/Salon');
+const SalonProfile = require('../models/SalonProfile');
 const multer = require('multer');
 const path = require('path');
 const { uploadFile } = require('../config/cloudinary'); // Sử dụng Cloudinary để upload ảnh
@@ -77,8 +80,39 @@ router.post('/salon', upload.array('images', 5), async (req, res) => {
 router.get('/salon/:salonId', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
-    const reviews = await Review.findAll({ where: { salonId: req.params.salonId }, order: [['rating', 'DESC']], limit: limit });
-    res.status(200).json({ reviews });
+    const reviews = await Review.findAll({ 
+      where: { salonId: req.params.salonId }, 
+      include: [
+        {
+          model: Service,
+          attributes: ['name'],
+        },
+        {
+          model: Salon,
+          include: [
+            {
+              model: SalonProfile,
+              attributes: ['name'],
+            }
+          ]
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: limit 
+    });
+
+    const formattedReviews = reviews.map(review => ({
+      id: review.id,
+      userName: review.userName || 'Anonymous',
+      serviceName: review.Service ? review.Service.name : null,
+      salonName: review.Salon?.SalonProfile?.name || null,
+      rating: review.rating,
+      comment: review.comment,
+      images: review.images,
+      createdAt: review.createdAt
+    }));
+    
+    res.status(200).json({ reviews: formattedReviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -116,8 +150,39 @@ router.post('/service', upload.array('images', 5), async (req, res) => {
 router.get('/service/:serviceID', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
-    const reviews = await Review.findAll({ where: { serviceId: req.params.serviceID }, order: [['rating', 'DESC']], limit: limit });
-    res.status(200).json({ reviews });
+    const reviews = await Review.findAll({ 
+      where: { serviceId: req.params.serviceID }, 
+      include: [
+        {
+          model: Service,
+          attributes: ['name'],
+        },
+        {
+          model: Salon,
+          include: [
+            {
+              model: SalonProfile,
+              attributes: ['name'],
+            }
+          ]
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: limit 
+    });
+
+    const formattedReviews = reviews.map(review => ({
+      id: review.id,
+      userName: review.userName || 'Anonymous',
+      serviceName: review.Service ? review.Service.name : null,
+      salonName: review.Salon?.SalonProfile?.name || null,
+      rating: review.rating,
+      comment: review.comment,
+      images: review.images,
+      createdAt: review.createdAt
+    }));
+    
+    res.status(200).json({ reviews: formattedReviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -160,8 +225,38 @@ router.post('/:reviewId/report', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
-    const reviews = await Review.findAll({order: [['rating', 'DESC']], limit: limit});
-    res.status(200).json({ reviews });
+    const reviews = await Review.findAll({
+      include: [
+        {
+          model: Service,
+          attributes: ['name'],
+        },
+        {
+          model: Salon,
+          include: [
+            {
+              model: SalonProfile,
+              attributes: ['name'],
+            }
+          ]
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: limit
+    });
+
+    const formattedReviews = reviews.map(review => ({
+      id: review.id,
+      userName: review.userName || 'Anonymous',
+      serviceName: review.Service ? review.Service.name : null,
+      salonName: review.Salon?.SalonProfile?.name || null,
+      rating: review.rating,
+      comment: review.comment,
+      images: review.images,
+      createdAt: review.createdAt
+    }));
+
+    res.status(200).json({ reviews: formattedReviews });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
