@@ -90,6 +90,7 @@
   - `priceRange`: String
   - `openTime`: String (required)
   - `totalStaff`: Number (required)
+  - `tag`: String
 - **Response**: `{ message: "Profile created", profile: {...} }`
 
 ### GET /salon-profile
@@ -373,12 +374,13 @@ GET /services/top-salons?limit=5&location=HCM
 
 ### POST /reviews
 - **Description**: Create a new review for a salon.
-- **Headers**:
-  - `Authorization`: Bearer token (required)
+<!-- - **Headers**:
+  - `Authorization`: Bearer token (required) -->
 - **Body (form-data)**:
   - `rating`: Number (required)
   - `comment`: String (optional)
-  - `salonId`: String (UUID, required)
+  - `salonId`: String (UUID, required if is a review for a specific salon otherwise is null)
+  - `serviceID`: String (UUID, required if is a review for a specific service otherwise is null)
   - `images`: File(s) (optional, up to 5 files; allowed types: jpeg, jpg, png)
 - **Response**:
   - **201**:  
@@ -394,10 +396,22 @@ GET /services/top-salons?limit=5&location=HCM
     { "message": "Server error", "error": "Error details" }
     ```
 
+### GET /reviews
+- **Description**: Retrieve all reviews.
+- **Response**:
+  - **200**:  
+    ```json
+    { "reviews": [ { ...review object... }, { ... } ] }
+    ```
+  - **500**:  
+    ```json
+    { "message": "Server error", "error": "Error details" }
+    ```
+
 ### GET /reviews/salon/:salonId
 - **Description**: Retrieve all reviews for a specific salon.
-- **Headers**:
-  - `Authorization`: Bearer token (required)
+<!-- - **Headers**:
+  - `Authorization`: Bearer token (required) -->
 - **URL Parameters**:
   - `salonId`: String (UUID of the salon, required)
 - **Response**:
