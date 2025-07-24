@@ -43,7 +43,7 @@ router.post('/', authSalon, async (req, res) => {
 });
 
 // Lấy danh sách quảng cáo của agency (có thể filter theo salon nếu muốn)
-router.get('/', authSalon, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const ads = await Advertisement.findAll({ where: { salonId: req.salonId } });
     res.status(200).json({ ads });
