@@ -40,19 +40,19 @@ module.exports = {
         allowNull: true,
       },
       priceRange: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: true,
       },
       openTime: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       totalStaff: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       tag: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: Sequelize.ARRAY(Sequelize.STRING),
         allowNull: true,
         defaultValue: []
       },

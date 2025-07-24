@@ -43,7 +43,7 @@ module.exports = {
         allowNull: false,
       },
       isHome: {
-        type: DataTypes.BOOLEAN,
+        type: Sequelize.BOOLEAN,
         allowNull: false,
       },
       illustrationImage: {
