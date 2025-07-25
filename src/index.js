@@ -33,13 +33,32 @@ app.use(cookieParser()); // Use cookie-parser middleware
 // Serve static files for uploads
 app.use('/uploads', express.static('uploads'));
 
+const allowedOrigins = process.env.NODE_ENV === 'development'
+  ? [
+      'http://localhost:8080',
+      'https://localhost:8080',
+      'http://localhost:3000',
+      'https://localhost:3443'
+    ]
+  : ['https://yourdomain.com']; // Thay thế bằng domain thực của bạn
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] // Thay thế bằng domain thực của bạn
-    : ['http://localhost:8080', 'https://localhost:8080', 'http://localhost:3000', 'https://localhost:3443'], // Allow cả HTTP và HTTPS cho development
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-  credentials: true, // Allow cookies if needed
-  
+  origin: function(origin, callback) {
+    console.log('[CORS] Request origin:', origin);
+    console.log('[CORS] Allowed origins:', allowedOrigins);
+
+    if (!origin) return callback(null, true);
+
+    const match = allowedOrigins.find(o => o === origin);
+    console.log('[CORS] Match found:', match);
+
+    if (match) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
 }));
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
@@ -210,3 +229,5 @@ app.use((err, req, res, next) => {
   console.error('Error:', err.stack); // Log full error stack
   res.status(500).json({ message: 'Server error', error: err.message || 'Unknown error' });
 });
+
+module.exports = app;
