@@ -1,11 +1,12 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Salon = require('./Salon');
+const Portfolio = require('./Portfolio');
 
 const SalonProfile = sequelize.define('SalonProfile', {
   id: {
     type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
+    defaultValue: DataTypes.UUIDV4, 
     primaryKey: true,
   },
   salonId: {
@@ -34,8 +35,12 @@ const SalonProfile = sequelize.define('SalonProfile', {
     allowNull: true,
   },
   portfolio: {
-    type: DataTypes.JSON,
+    type: DataTypes.UUID,
     allowNull: true,
+    references: {
+      model: 'portfolios',
+      key: 'id',
+    },
   },
   priceRange: {
     type: DataTypes.STRING,
@@ -63,7 +68,11 @@ const SalonProfile = sequelize.define('SalonProfile', {
   timestamps: false,
 });
 
+// Associations
 Salon.hasOne(SalonProfile, { foreignKey: 'salonId' });
 SalonProfile.belongsTo(Salon, { foreignKey: 'salonId' });
+
+Portfolio.hasOne(SalonProfile, { foreignKey: 'portfolio' });
+SalonProfile.belongsTo(Portfolio, { foreignKey: 'portfolio' });
 
 module.exports = SalonProfile;

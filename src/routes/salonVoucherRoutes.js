@@ -39,9 +39,11 @@ router.post('/', authSalon, async (req, res) => {
 });
 
 // Lấy danh sách ưu đãi của salon
-router.get('/', authSalon, async (req, res) => {
+router.get('/:salonId', async (req, res) => {
+    console.log('Params:', req.params);
+  console.log('salonId:', req.params.salonId);
   try {
-    const salonVouchers = await SalonVoucher.findAll({ where: { salonId: req.salonId } });
+    const salonVouchers = await SalonVoucher.findAll({ where: { salonId: req.params.salonId } });
     res.status(200).json({ salonVouchers });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

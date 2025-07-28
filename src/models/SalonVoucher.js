@@ -17,6 +17,10 @@ const SalonVoucher = sequelize.define('SalonVoucher', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    code: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     discountPercentage: {
         type: DataTypes.INTEGER,
         allowNull: true,

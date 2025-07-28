@@ -5,6 +5,7 @@ const path = require('path');
 const SalonProfile = require('../models/SalonProfile');
 const Salon = require('../models/Salon');
 const Service = require('../models/Service');
+const Portfolio = require('../models/Portfolio');
 const { uploadFile } = require('../config/cloudinary');
 
 const router = express.Router();
@@ -95,6 +96,7 @@ router.post('/', auth, upload.array('portfolio', 5), async (req, res) => {
   }
 });
 
+
 router.get('/', auth, async (req, res) => {
   try {
     const profile = await SalonProfile.findOne({ where: { salonId: req.salonId } });
@@ -107,6 +109,39 @@ router.get('/', auth, async (req, res) => {
       email: salon.email, 
       isVerified: salon.isVerified
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+router.get('/spa/:id', async (req, res) => {
+  try {
+    const profile = await SalonProfile.findOne({ 
+      where: { id: req.params.id },
+      include: [] // Explicitly exclude all associations
+    });
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found, Profile ID: ' + req.params.id });
+    }
+    const salon = await Salon.findOne({where: {id : profile.salonId}});
+    if (!salon) {
+      return res.status(404).json({ message: 'Salon not found' });
+    }
+    
+    const portfolio = await Portfolio.findOne({ where: { id: profile.portfolio } });
+
+    // Only include portfolio if it exists and you want to include it
+    const responseData = {
+      profile, 
+      images: portfolio ? portfolio.representative_images : [],
+      gallery: portfolio ? portfolio.gallery_images : [],
+      email: salon.email, 
+      isVerified: salon.isVerified,
+      rating: salon.rating || 0,
+      reviewCount: salon.reviewCount || 0,
+    };
+
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
