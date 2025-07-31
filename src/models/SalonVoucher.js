@@ -21,8 +21,18 @@ const SalonVoucher = sequelize.define('SalonVoucher', {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    discountPercentage: {
+    discountType: {
+        type: DataTypes.ENUM('percentage', 'fixed_amount'),
+        allowNull: false,
+        defaultValue: 'percentage',
+    },
+
+    discountValue: {
         type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    description: {
+        type: DataTypes.STRING,
         allowNull: true,
     },
     comboDetails: {

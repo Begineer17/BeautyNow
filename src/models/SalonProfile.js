@@ -34,6 +34,12 @@ const SalonProfile = sequelize.define('SalonProfile', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  businessType: {
+    type: DataTypes.ENUM('1', '2', '3'), // Should use string values to match Postgres ENUM
+    allowNull: false,
+    defaultValue: '1', // Default to '1' as string
+  },
+
   portfolio: {
     type: DataTypes.UUID,
     allowNull: true,

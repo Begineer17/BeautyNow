@@ -296,4 +296,110 @@ router.post('/search', async (req, res) => {
   }
 });
 
+router.get('/:salonId', async (req, res) => {
+  const { slonId } = req.params;
+  try {
+    const services = await Service.findAll({
+      where: { salonId: req.params.salonId },
+    }); 
+    
+    res.status(200).json({ 
+      success: true,
+      data: services,
+      message: 'Services retrieved successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
+
+
+router.get('/spa/explore-spa', async (req, res) => {
+  try {
+    console.log("🔍 Exploring salon profiles with query:", req.query);
+    console.log("🔍 Exploring salon profiles with businessType:", req.query.businessType);
+    console.log("🔍 Exploring salon profiles with serviceCategory:", req.query.serviceCategory);
+    const { query, businessType, serviceCategory, city, district } = req.query;
+    const whereClause = {};
+
+    if (query) {
+      whereClause.name = { [Op.iLike]: `%${query}%` };
+    }
+
+    if (businessType) {
+      whereClause.businessType = { [Op.eq]: businessType };
+    }
+
+    if (serviceCategory) {
+      whereClause[Op.and] = literal(`"tag" @> ARRAY['${serviceCategory}']::text[]`);
+    }
+
+    if (city || district) {
+      if (city && district) {
+        whereClause.address = {
+          [Op.and]: [
+            { [Op.iLike]: `%${city}%` },
+            { [Op.iLike]: `%${district}%` }
+          ]
+        };
+      } else if (city) {
+        whereClause.address = { [Op.iLike]: `%${city}%` };
+      } else {
+        whereClause.address = { [Op.iLike]: `%${district}%` };
+      } 
+    }
+    console.log("🔍 Searching salon profiles with name like:", req.query);
+
+    const salonProfiles = await SalonProfile.findAll({
+      where: whereClause,
+      attributes: [
+        'id',
+        'salonId',
+        'name',
+        'address',
+        'phone',
+        'description',
+        'businessType',
+        'portfolio',
+        'priceRange',
+        'openTime',
+        'totalStaff',
+        'tag',
+        'createdAt'
+      ],
+      
+    });
+
+    res.json({ success: true, length: salonProfiles.length, data: salonProfiles });
+  } catch (err) {
+    console.error("❌ Error exploring salons:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+router.get('/:salonId', async (req, res) => {
+  const { salonId } = req.params;
+  try {
+    const services = await Service.findAll({
+      where: { salonId },
+    });
+    res.status(200).json({
+      success: true,
+      data: services,
+      message: 'Services retrieved successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+});
 module.exports = router;
