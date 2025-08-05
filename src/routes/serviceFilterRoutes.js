@@ -57,6 +57,221 @@ router.post('/filter', async (req, res) => {
   }
 });
 
+
+router.get('/search', async (req, res) => {
+  try {
+    const {
+      query,
+      businessType,
+      city,
+      district,
+      serviceCategory,
+      minPrice,
+      maxPrice,
+      minRating,
+      hasPromotion,
+      sortBy = 'rating',
+      page = '1',
+      limit = '20'
+    } = req.query;
+
+    const parsedPage = parseInt(page) || 1;
+    const parsedLimit = parseInt(limit) || 20;
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const salonWhere = {};
+
+    if (query && query.trim()) {
+      salonWhere[Op.or] = [
+        { name: { [Op.iLike]: `%${query.trim()}%` } },
+        { description: { [Op.iLike]: `%${query.trim()}%` } }
+      ];
+    }
+
+    if (businessType) {
+      const businessTypeMap = {
+        'spa': '1',
+        'salon': '2',
+        'freelancer': '3',
+        '1': '1',
+        '2': '2',
+        '3': '3'
+      };
+      const mapped = businessTypeMap[businessType.toLowerCase()];
+      if (mapped) salonWhere.businessType = mapped;
+    }
+
+    if (city || district) {
+      const addressConditions = [];
+      if (city) addressConditions.push({ [Op.iLike]: `%${city}%` });
+      if (district) addressConditions.push({ [Op.iLike]: `%${district}%` });
+
+      salonWhere.address = addressConditions.length > 1
+        ? { [Op.and]: addressConditions }
+        : addressConditions[0];
+    }
+
+    if (serviceCategory) {
+      salonWhere[Op.and] = salonWhere[Op.and] || [];
+      salonWhere[Op.and].push(
+        literal(`"SalonProfile"."tag" @> ARRAY['${serviceCategory}']::text[]`)
+      );
+    }
+
+    const priceConditions = [];
+    if (minPrice && !isNaN(minPrice)) {
+      priceConditions.push(
+        literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 1), '[^0-9]', '') AS INTEGER) >= ${parseInt(minPrice)}`)
+      );
+    }
+    if (maxPrice && !isNaN(maxPrice)) {
+      priceConditions.push(
+        literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 2), '[^0-9]', '') AS INTEGER) <= ${parseInt(maxPrice)}`)
+      );
+    }
+    if (priceConditions.length > 0) {
+      salonWhere[Op.and] = salonWhere[Op.and] || [];
+      salonWhere[Op.and].push(...priceConditions);
+    }
+
+    const salonModelWhere = {};
+    if (minRating && !isNaN(minRating)) {
+      salonModelWhere.rating = { [Op.gte]: parseFloat(minRating) };
+    }
+
+    const includeArray = [
+      {
+        model: Salon,
+        as: 'Salon',
+        where: Object.keys(salonModelWhere).length > 0 ? salonModelWhere : undefined,
+        required: true,
+        attributes: ['id', 'email', 'rating', 'reviewCount', 'licenseStatus', 'isVerified']
+      }
+    ];
+
+    if (hasPromotion === 'true') {
+      salonWhere[Op.and] = salonWhere[Op.and] || [];
+      salonWhere[Op.and].push(
+        literal(`EXISTS (
+          SELECT 1 FROM "salon_vouchers" AS "SalonVouchers" 
+          WHERE "SalonVouchers"."salonId" = "SalonProfile"."salonId" 
+          AND "SalonVouchers"."startDate" <= NOW() 
+          AND "SalonVouchers"."endDate" >= NOW()
+        )`)
+      );
+
+      includeArray[0].include = [
+        {
+          model: Voucher,
+          as: 'SalonVouchers',
+          where: {
+            startDate: { [Op.lte]: new Date() },
+            endDate: { [Op.gte]: new Date() }
+          },
+          required: false
+        }
+      ];
+    }
+
+    let orderBy;
+    switch (sortBy) {
+      case 'reviews':
+        orderBy = [[{ model: Salon, as: 'Salon' }, 'reviewCount', 'DESC']];
+        break;
+      case 'price_low':
+        orderBy = [[
+          literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 1), '[^0-9]', '') AS INTEGER)`),
+          'ASC'
+        ]];
+        break;
+      case 'price_high':
+        orderBy = [[
+          literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 2), '[^0-9]', '') AS INTEGER)`),
+          'DESC'
+        ]];
+        break;
+      case 'distance':
+        orderBy = [['createdAt', 'DESC']];
+        break;
+      case 'rating':
+      default:
+        orderBy = [[
+          literal(`(
+            CASE 
+              WHEN "Salon"."reviewCount" > 0 AND "Salon"."rating" IS NOT NULL THEN
+                "Salon"."rating" * LOG("Salon"."reviewCount" + 1)
+              ELSE 0
+            END
+          )`),
+          'DESC'
+        ]];
+        break;
+    }
+
+    const { count, rows: businesses } = await SalonProfile.findAndCountAll({
+      where: salonWhere,
+      include: includeArray,
+      attributes: [
+        'id', 'salonId', 'name', 'address', 'phone', 'description',
+        'businessType', 'portfolio', 'priceRange', 'openTime', 'totalStaff',
+        'tag', 'createdAt'
+      ],
+      order: orderBy,
+      limit: parsedLimit,
+      offset,
+      distinct: true,
+      subQuery: false
+    });
+
+    const formattedBusinesses = businesses.map(b => {
+      const hasPromo = b.Salon?.SalonVouchers?.length > 0;
+      return {
+        id: b.id,
+        salonId: b.salonId,
+        name: b.name,
+        address: b.address,
+        phone: b.phone,
+        description: b.description,
+        businessType: b.businessType,
+        portfolio: b.portfolio,
+        priceRange: b.priceRange,
+        openTime: b.openTime,
+        totalStaff: b.totalStaff,
+        tags: b.tag || [],
+        rating: b.Salon?.rating || 0,
+        reviewCount: b.Salon?.reviewCount || 0,
+        isVerified: b.Salon?.isVerified || false,
+        hasPromotion: hasPromo,
+        licenseStatus: b.Salon?.licenseStatus,
+        createdAt: b.createdAt
+      };
+    });
+
+    console.log(`✅ Found ${count} businesses, returning ${formattedBusinesses.length}`);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        businesses: formattedBusinesses,
+        totalCount: count,
+        currentPage: parsedPage,
+        totalPages: Math.ceil(count / parsedLimit),
+        hasNextPage: parsedPage * parsedLimit < count,
+        hasPrevPage: parsedPage > 1
+      },
+      message: 'Search completed successfully'
+    });
+
+  } catch (error) {
+    console.error('❌ Search error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+});
+
 /*
   API: GET /api/services/top
   Lấy danh sách top services dựa trên rating cao và review count nhiều
@@ -263,244 +478,6 @@ router.get('/:salonId', async (req, res) => {
       message: 'Services retrieved successfully'
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: error.message
-    });
-  }
-});
-
-router.post('/search', async (req, res) => {
-  try {
-    const {
-      query,
-      businessType,
-      city,
-      district,
-      serviceCategory,
-      minPrice,
-      maxPrice,
-      minRating,
-      hasPromotion,
-      sortBy = 'rating',
-      page = 1,
-      limit = 20
-    } = req.body;
-
-    console.log('🔍 Search request:', req.body);
-
-    // Build WHERE conditions for SalonProfile
-    const salonWhere = {};
-
-    if (query && query.trim()) {
-      salonWhere[Op.or] = [
-        { name: { [Op.iLike]: `%${query.trim()}%` } },
-        { description: { [Op.iLike]: `%${query.trim()}%` } }
-      ];
-    }
-
-    if (businessType) {
-      // Map businessType string to enum values
-      const businessTypeMap = {
-        'spa': '1',
-        'salon': '2', 
-        'freelancer': '3',
-        // Also support direct enum values
-        '1': '1',
-        '2': '2',
-        '3': '3'
-      };
-      
-      const mappedBusinessType = businessTypeMap[businessType.toLowerCase()];
-      if (mappedBusinessType) {
-        salonWhere.businessType = mappedBusinessType;
-      } else {
-        console.warn(`⚠️ Invalid businessType: ${businessType}. Using default mapping.`);
-        // If invalid, you can either skip the filter or use a default
-        // Skip filter for invalid values
-      }
-    }
-
-    // Address filtering
-    if (city || district) {
-      const addressConditions = [];
-      if (city) addressConditions.push({ [Op.iLike]: `%${city}%` });
-      if (district) addressConditions.push({ [Op.iLike]: `%${district}%` });
-
-      salonWhere.address = addressConditions.length > 1
-        ? { [Op.and]: addressConditions }
-        : addressConditions[0];
-    }
-
-    // Service category filtering
-    // if (serviceCategory) {
-    //   salonWhere[Op.and] = salonWhere[Op.and] || [];
-    //   // Sử dụng ANY thay vì @> để tìm kiếm trong mảng
-    //   salonWhere[Op.and].push(literal(`'${serviceCategory}' = ANY("SalonProfile"."tag")`));
-    // }
-    if (serviceCategory) {
-      salonWhere[Op.and] = salonWhere[Op.and] || [];
-      salonWhere[Op.and].push(literal(`"SalonProfile"."tag" @> ARRAY['${serviceCategory}']::text[]`));
-    }
-
-    // Price range filtering
-    const priceConditions = [];
-    if (minPrice) {
-      priceConditions.push(literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 1), '[^0-9]', '') AS INTEGER) >= ${minPrice}`));
-    }
-    if (maxPrice) {
-      priceConditions.push(literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 2), '[^0-9]', '') AS INTEGER) <= ${maxPrice}`));
-    }
-    if (priceConditions.length > 0) {
-      salonWhere[Op.and] = salonWhere[Op.and] || [];
-      salonWhere[Op.and].push(...priceConditions);
-    }
-
-    // Build WHERE conditions for Salon model
-    const salonModelWhere = {};
-    if (minRating) {
-      salonModelWhere.rating = { [Op.gte]: minRating };
-    }
-
-    // Build include array with proper structure
-    const includeArray = [
-      {
-        model: Salon,
-        as: 'Salon',
-        where: Object.keys(salonModelWhere).length > 0 ? salonModelWhere : undefined,
-        required: true,
-        attributes: ['id', 'email', 'rating', 'reviewCount', 'licenseStatus', 'isVerified']
-      }
-    ];
-
-    // Add voucher filtering if hasPromotion is true
-    if (hasPromotion) {
-      // Add voucher subquery condition to the main WHERE clause
-      salonWhere[Op.and] = salonWhere[Op.and] || [];
-      salonWhere[Op.and].push(
-        literal(`EXISTS (
-          SELECT 1 FROM "salon_vouchers" AS "SalonVouchers" 
-          WHERE "SalonVouchers"."salonId" = "SalonProfile"."salonId" 
-          AND "SalonVouchers"."startDate" <= NOW() 
-          AND "SalonVouchers"."endDate" >= NOW()
-        )`)
-      );
-
-      // Also include vouchers in the result for display
-      includeArray[0].include = [
-        {
-          model: Voucher,
-          as: 'SalonVouchers',
-          where: {
-            startDate: { [Op.lte]: new Date() },
-            endDate: { [Op.gte]: new Date() }
-          },
-          required: false // Use LEFT JOIN to avoid duplicating rows
-        }
-      ];
-    }
-
-    // Define ORDER BY clause
-    let orderBy;
-    switch (sortBy) {
-      case 'reviews':
-        orderBy = [[{ model: Salon, as: 'Salon' }, 'reviewCount', 'DESC']];
-        break;
-      case 'price_low':
-        orderBy = [[literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 1), '[^0-9]', '') AS INTEGER)`), 'ASC']];
-        break;
-      case 'price_high':
-        orderBy = [[literal(`CAST(REGEXP_REPLACE(SPLIT_PART("SalonProfile"."priceRange", '-', 2), '[^0-9]', '') AS INTEGER)`), 'DESC']];
-        break;
-      case 'distance':
-        orderBy = [['createdAt', 'DESC']];
-        break;
-      case 'rating':
-      default:
-        orderBy = [[
-          literal(`(
-            CASE 
-              WHEN "Salon"."reviewCount" > 0 AND "Salon"."rating" IS NOT NULL THEN
-                "Salon"."rating" * LOG("Salon"."reviewCount" + 1)
-              ELSE 0
-            END
-          )`),
-          'DESC'
-        ]];
-        break;
-    }
-
-    const offset = (page - 1) * limit;
-
-    // Execute the query
-    const { count, rows: businesses } = await SalonProfile.findAndCountAll({
-      where: salonWhere,
-      include: includeArray,
-      attributes: [
-        'id',
-        'salonId', 
-        'name',
-        'address',
-        'phone',
-        'description',
-        'businessType',
-        'portfolio',
-        'priceRange',
-        'openTime',
-        'totalStaff',
-        'tag',
-        'createdAt'
-      ],
-      order: orderBy,
-      limit: parseInt(limit),
-      offset: offset,
-      distinct: true,
-      subQuery: false // Important: disable subQuery to avoid complex nested queries
-    });
-
-    // Format the response
-    const formattedBusinesses = businesses.map(business => {
-      const hasPromo = business.Salon?.SalonVouchers?.length > 0;
-      return {
-        id: business.id,
-        salonId: business.salonId,
-        name: business.name,
-        address: business.address,
-        phone: business.phone,
-        description: business.description,
-        businessType: business.businessType,
-        portfolio: business.portfolio,
-        priceRange: business.priceRange,
-        openTime: business.openTime,
-        totalStaff: business.totalStaff,
-        tags: business.tag || [],
-        rating: business.Salon?.rating || 0,
-        reviewCount: business.Salon?.reviewCount || 0,
-        isVerified: business.Salon?.isVerified || false,
-        hasPromotion: hasPromo,
-        licenseStatus: business.Salon?.licenseStatus,
-        createdAt: business.createdAt
-      };
-    });
-
-    console.log(`✅ Found ${count} businesses, returning ${formattedBusinesses.length}`);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        businesses: formattedBusinesses,
-        totalCount: count,
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(count / limit),
-        hasNextPage: page * limit < count,
-        hasPrevPage: page > 1
-      },
-      message: 'Search completed successfully'
-    });
-
-  } catch (error) {
-    console.error('❌ Search error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',

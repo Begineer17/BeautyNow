@@ -184,8 +184,10 @@ const userVoucherRoutes = require('./routes/userVoucherRoutes');
 app.use('/user-vouchers', userVoucherRoutes);
 
 const pushNotificationRoutes = require('./routes/pushNotificationRoutes');
-
 app.use('/push-notification', pushNotificationRoutes);
+
+const contactRoutes = require('./routes/contactRoutes');
+app.use('/contacts', contactRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

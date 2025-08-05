@@ -132,12 +132,12 @@ router.post('/verify-otp', async (req, res) => {
 // Đăng nhập
 router.post('/login', async (req, res) => {
   const { email, password, role } = req.body;
-
+  let n, i;
   try {
     let account;
     if (role === 'salon') {
-      account = await Salon.findOne({ where: { email } });
-      if (!account) return res.status(400).json({ message: 'Invalid credentials' });
+      account = await Salon.findOne({ where: { email: email } });
+      if (!account) return res.status(400).json({ message: 'Account not exists.' });
       if (account.licenseStatus !== 'verified') {
         return res.status(400).json({ message: 'Business license not verified' });
       }
@@ -149,7 +149,7 @@ router.post('/login', async (req, res) => {
     if (!account.isVerified) return res.status(400).json({ message: 'Account not verified' });
 
     const isMatch = await bcrypt.compare(password, account.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials. 123' });
 
     const token = jwt.sign({ id: account.id, role }, process.env.JWT_SECRET, {
       expiresIn: '1d',
