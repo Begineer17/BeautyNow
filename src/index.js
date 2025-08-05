@@ -124,7 +124,7 @@ httpServer.listen(PORT, () => {
 const httpsServer = https.createServer(sslOptions, app);
 const io = new Server(httpsServer, {
   cors: { 
-    origin: ['https://localhost:8080', 'https://localhost:3443'],
+    origin: process.env.ORIGIN.split(',').map(origin => origin.trim()),
     credentials: true
   }
 });
