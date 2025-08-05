@@ -88,9 +88,9 @@ router.put('/:apId', authSalon, async (req, res) => {
   const { status } = req.body; // Chỉ cập nhật trạng thái nếu cần
   try {
     const ap = await Appointment.findOne({ where: { id: apId, salonId: req.salonId } });
-    if (!ad) return res.status(404).json({ message: 'Advertisement not found' });
+    if (!ap) return res.status(404).json({ message: 'Appointment not found' });
     
-    await ad.update({ status }); 
+    await ap.update({ status: status }); 
 
     res.status(200).json({ message: 'Appointment updated', ap });
   } catch (error) {
