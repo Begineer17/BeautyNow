@@ -33,15 +33,9 @@ app.use(cookieParser()); // Use cookie-parser middleware
 // Serve static files for uploads
 app.use('/uploads', express.static('uploads'));
 
-const allowedOrigins = process.env.NODE_ENV === 'development'
-  ? [
-      'http://localhost:8080',
-      'https://localhost:8080',
-      'http://localhost:3000',
-      'https://localhost:3443'
-    ]
-  : ['https://yourdomain.com']; // Thay thế bằng domain thực của bạn
-
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : [];
 app.use(cors({
   origin: function(origin, callback) {
     console.log('[CORS] Request origin:', origin);
